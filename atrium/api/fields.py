@@ -1,7 +1,14 @@
 from flask_restful import fields
 
+user_fields = {
+    'sub': fields.String,
+    'email': fields.String,
+    'admin': fields.Boolean
+}
+
 profile_fields = {
     'id': fields.String,
+    'user': fields.Nested(user_fields),
     'first_name': fields.String,
     'last_name': fields.String,
     'photo': fields.String,

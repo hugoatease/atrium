@@ -2,13 +2,15 @@ var React = require('react');
 var request = require('superagent');
 var slug = require('slug');
 var ReactQuill = require('react-quill');
+var MemberSearch = require('./MemberSearch');
 
 var ClubEdit = React.createClass({
     getInitialState: function() {
         return {
             slug: this.props.params.slug,
             name: null,
-            description: null
+            description: null,
+            members: []
         }
     },
 
@@ -67,10 +69,28 @@ var ClubEdit = React.createClass({
             });
     },
 
+    addMember: function(profile) {
+        request.post('/api/clubs/' + this.state.slug + '/members')
+            .send({'profile_id': profile.id})
+            .end(function(err) {
+                if (err) return;
+                this.fetch(this.state.slug);
+            }.bind(this));
+    },
+
+    removeMember: function(profile) {
+        request.del('/api/clubs/' + this.state.slug + '/members')
+            .send({profile_id: profile.id})
+            .end(function(err) {
+                if (err) return;
+                this.fetch(this.state.slug);
+            }.bind(this));
+    },
+
     render: function() {
         return (
             <div className="row">
-                <div className="medium-6">
+                <div className="medium-6 column">
                     <h5>Club information</h5><hr />
                     <form onSubmit={this.save}>
                         <label>
@@ -87,6 +107,14 @@ var ClubEdit = React.createClass({
                         </label>
                         <button type="submit" className="button success">Save</button>
                     </form>
+                </div>
+                <div className="medium-6 column">
+                    <h5>Club members</h5><hr />
+                    <MemberSearch profiles={this.state.members} callback={this.removeMember} />
+
+                    <h6>Add members</h6>
+                    <p>Add club members by clicking on them</p>
+                    <MemberSearch callback={this.addMember} />
                 </div>
             </div>
         )

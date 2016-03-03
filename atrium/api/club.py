@@ -1,6 +1,6 @@
 from flask_restful import Resource, marshal_with, reqparse
 from .fields import club_fields
-from atrium.schemas import Club
+from atrium.schemas import Club, Profile
 
 
 class ClubListResource(Resource):
@@ -46,3 +46,27 @@ class ClubResource(Resource):
 
         club.save()
         return club
+
+
+class ClubMembersResource(Resource):
+    def post(self, club_slug):
+        club = Club.objects.with_id(club_slug)
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('profile_id', type=unicode)
+        args = parser.parse_args()
+
+        club.update(add_to_set__members=Profile.objects.with_id(args['profile_id']))
+
+        return 'OK', 200
+
+    def delete(self, club_slug):
+        club = Club.objects.with_id(club_slug)
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('profile_id', type=unicode)
+        args = parser.parse_args()
+
+        club.update(pull__members=Profile.objects.with_id(args['profile_id']))
+
+        return 'DELETED', 204
