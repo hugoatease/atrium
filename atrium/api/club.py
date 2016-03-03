@@ -1,6 +1,9 @@
-from flask_restful import Resource, marshal_with, reqparse
+from flask_restful import Resource, marshal_with, reqparse, current_app
 from .fields import club_fields
 from atrium.schemas import Club, Profile
+import werkzeug.datastructures
+from atrium import s3conn
+from boto.s3.key import Key
 
 
 class ClubListResource(Resource):
@@ -70,3 +73,25 @@ class ClubMembersResource(Resource):
         club.update(pull__members=Profile.objects.with_id(args['profile_id']))
 
         return 'DELETED', 204
+
+
+class ClubLogoResource(Resource):
+    @marshal_with(club_fields)
+    def post(self, club_slug):
+        club = Club.objects.with_id(club_slug)
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('logo', type=werkzeug.datastructures.FileStorage, location='files')
+        args = parser.parse_args()
+
+        bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
+        key = Key(bucket)
+        key.key = 'clubs/' + str(club.id)
+        key.content_type = args['logo'].mimetype
+        key.set_contents_from_file(args['logo'].stream)
+        key.make_public()
+
+        club.logo = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/clubs/' + str(club.id)
+        club.save()
+
+        return club

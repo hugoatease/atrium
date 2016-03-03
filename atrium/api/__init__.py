@@ -1,6 +1,6 @@
 from flask_restful import Api
 from .profile import ProfileResource, ProfileListResource, ProfilePhoto
-from .club import ClubListResource, ClubResource, ClubMembersResource
+from .club import ClubListResource, ClubResource, ClubMembersResource, ClubLogoResource
 from .event import EventListResource, EventResource
 from .news import NewsListResource, NewsResource
 
@@ -13,6 +13,7 @@ api.add_resource(ProfilePhoto, '/api/profiles/<profile_id>/photo')
 api.add_resource(ClubListResource, '/api/clubs')
 api.add_resource(ClubResource, '/api/clubs/<club_slug>')
 api.add_resource(ClubMembersResource, '/api/clubs/<club_slug>/members')
+api.add_resource(ClubLogoResource, '/api/clubs/<club_slug>/logo')
 
 api.add_resource(EventListResource, '/api/events')
 api.add_resource(EventResource, '/api/events/<event_id>')

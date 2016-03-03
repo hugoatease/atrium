@@ -2,7 +2,9 @@ var React = require('react');
 var request = require('superagent');
 var slug = require('slug');
 var ReactQuill = require('react-quill');
+var Dropzone = require('react-dropzone');
 var MemberSearch = require('./MemberSearch');
+
 
 var ClubEdit = React.createClass({
     getInitialState: function() {
@@ -10,7 +12,9 @@ var ClubEdit = React.createClass({
             slug: this.props.params.slug,
             name: null,
             description: null,
-            members: []
+            members: [],
+            logo: null,
+            uploading: false
         }
     },
 
@@ -87,7 +91,35 @@ var ClubEdit = React.createClass({
             }.bind(this));
     },
 
+    uploadPhoto: function(file) {
+        this.setState({uploading: true});
+        request.post('/api/clubs/' + this.state.slug + '/logo')
+            .attach('logo', file[0])
+            .end(function(err, res) {
+                if (err) return;
+                this.setState({uploading: false});
+                this.setState(res.body);
+            }.bind(this));
+    },
+
     render: function() {
+        if (!this.state.logo) {
+            var logo = (
+                <Dropzone multiple={false} onDrop={this.uploadPhoto}>
+                    {!this.state.uploading ? <span>
+                        Drop your logo or click to select file.
+                    </span> : <span>Uploading logo...</span>}
+                </Dropzone>
+            );
+        }
+        else {
+            var logo = (
+                <div>
+                    <img src={this.state.logo} width="100" />
+                </div>
+            )
+        }
+
         return (
             <div className="row">
                 <div className="medium-6 column">
@@ -101,6 +133,7 @@ var ClubEdit = React.createClass({
                             <span>Name</span>
                             <input type="text" placeholder="Club name" value={this.state.name} onChange={this.handleNameChange} />
                         </label>
+                        {logo}
                         <label>
                             <span>Description</span>
                             <ReactQuill placeholder="Club description" value={this.state.description} theme="snow" onChange={this.handleDescriptionChange} />
