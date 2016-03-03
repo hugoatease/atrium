@@ -1,8 +1,11 @@
-from flask import request
+from flask import request, current_app
 from flask_restful import Resource, marshal_with, reqparse
 from atrium.schemas import Event, Place, Club
 from .fields import event_fields
 import arrow
+import werkzeug.datastructures
+from atrium import s3conn
+from boto.s3.key import Key
 
 
 class EventListResource(Resource):
@@ -79,3 +82,25 @@ class EventResource(Resource):
         event = Event.objects.with_id(event_id)
         event.delete()
         return '', 204
+
+
+class EventPoster(Resource):
+    @marshal_with(event_fields)
+    def post(self, event_id):
+        event = Event.objects.with_id(event_id)
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('poster', type=werkzeug.datastructures.FileStorage, location='files')
+        args = parser.parse_args()
+
+        bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
+        key = Key(bucket)
+        key.key = 'events/' + str(event.id)
+        key.content_type = args['poster'].mimetype
+        key.set_contents_from_file(args['poster'].stream)
+        key.make_public()
+
+        event.poster = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/events/' + str(event.id)
+        event.save()
+
+        return event
