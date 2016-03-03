@@ -1,5 +1,6 @@
+from flask import request
 from flask_restful import Resource, marshal_with, reqparse
-from atrium.schemas import Event, Place
+from atrium.schemas import Event, Place, Club
 from .fields import event_fields
 import arrow
 
@@ -7,7 +8,11 @@ import arrow
 class EventListResource(Resource):
     @marshal_with(event_fields)
     def get(self):
-        return list(Event.objects.all())
+        query = Event.objects
+        if 'club' in request.args:
+            query = query.filter(club=Club.objects.with_id(request.args['club']))
+
+        return list(query.all())
 
     @marshal_with(event_fields)
     def post(self):
