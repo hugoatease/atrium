@@ -17,3 +17,4 @@ api.add_resource(EventResource, '/api/events/<event_id>')
 
 api.add_resource(NewsListResource, '/api/news')
 api.add_resource(NewsResource, '/api/news/<news_id>')
+

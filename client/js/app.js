@@ -2,7 +2,7 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var Router = require('react-router').Router;
 var Route = require('react-router').Route;
-var hashHistory = require('react-router').hashHistory;
+var browserHistory = require('react-router').browserHistory;
 
 var ClubEdit = require('./ClubEdit');
 
@@ -18,9 +18,9 @@ var App = React.createClass({
 
 function renderEditor(container) {
     ReactDOM.render((
-        <Router history={hashHistory}>
-            <Route path="/" component={App}>
-                <Route name="club-create" path="clubs" component={ClubEdit} />
+        <Router history={browserHistory}>
+            <Route path="/editor" component={App}>
+                <Route name="club-create" path="clubs/create" component={ClubEdit} />
                 <Route name="club-edit" path="clubs/:slug" component={ClubEdit} />
             </Route>
         </Router>
