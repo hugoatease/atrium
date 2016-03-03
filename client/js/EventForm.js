@@ -4,8 +4,16 @@ var ReactQuill = require('react-quill');
 var moment = require('moment');
 var DatePicker = require('react-datepicker');
 var clone = require('lodash/clone');
+var browserHistory = require('react-router').browserHistory;
+var moment = require('moment');
 
 var EventCreate = React.createClass({
+    getDefaultProps: function() {
+        return {
+            event_id: null
+        }
+    },
+
     getInitialState: function() {
         return {
             name: null,
@@ -16,6 +24,25 @@ var EventCreate = React.createClass({
                 name: null,
                 address: null
             }
+        }
+    },
+
+    componentDidMount: function() {
+        if (this.props.event_id) {
+            request.get('/api/events/' + this.props.event_id)
+                .end(function(err, res) {
+                    if (err) return;
+                    this.setState({
+                        name: res.body.name,
+                        description: res.body.description,
+                        start_date: moment.utc(res.body.start_date),
+                        end_date: moment.utc(res.body.end_date),
+                        place: {
+                            name: res.body.place.name,
+                            address: res.body.place.address
+                        }
+                    });
+                }.bind(this));
         }
     },
 
@@ -55,22 +82,33 @@ var EventCreate = React.createClass({
 
     save: function(ev) {
         ev.preventDefault();
-        request.post('/api/events')
-            .send({
-                name: this.state.name,
-                club: this.props.club,
-                description: this.state.description,
-                start_date: this.state.start_date.toISOString(),
-                end_date: this.state.end_date.toISOString(),
-                place: {
-                    name: this.state.place.name,
-                    address: this.state.place.address
-                }
-            })
-            .end(function(err, res) {
-                if (err) return;
-                console.log('OK');
-            })
+        var event_data = {
+            name: this.state.name,
+            club: this.props.club,
+            description: this.state.description,
+            start_date: this.state.start_date.toISOString(),
+            end_date: this.state.end_date.toISOString(),
+            place: {
+                name: this.state.place.name,
+                address: this.state.place.address
+            }
+        };
+
+        if (!this.props.event_id) {
+            request.post('/api/events')
+                .send(event_data)
+                .end(function(err, res) {
+                    if (err) return;
+                    browserHistory.push('/editor/events/' + res.body.id);
+                });
+        }
+        else {
+            request.put('/api/events/' + this.props.event_id)
+                .send(event_data)
+                .end(function(err, res) {
+                    if (err) return;
+                });
+        }
     },
 
     render: function() {

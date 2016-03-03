@@ -67,7 +67,7 @@ class EventResource(Resource):
 
         for field in ['start_date', 'end_date']:
             if field in args.keys():
-                setattr(event, field, arrow.get(field).naive)
+                setattr(event, field, arrow.get(args[field]).naive)
 
         if 'place' in args:
             event.place = Place(name=args['place']['name'], address=args['place']['address'])

@@ -7,6 +7,7 @@ var browserHistory = require('react-router').browserHistory;
 var ClubEdit = require('./ClubEdit');
 var ProfileEdit = require('./ProfileEdit');
 var ClubEvents = require('./ClubEvents');
+var EventEdit = require('./EventEdit');
 
 var App = React.createClass({
    render: function() {
@@ -26,6 +27,7 @@ function renderEditor(container) {
                 <Route name="club-edit" path="clubs/:slug" component={ClubEdit} />
                 <Route name="profile-edit" path="profiles/:id" component={ProfileEdit} />
                 <Route name="club-events" path="clubs/:slug/events" component={ClubEvents} />
+                <Route name="event-edit" path="events/:event_id" component={EventEdit} />
             </Route>
         </Router>
     ), container);

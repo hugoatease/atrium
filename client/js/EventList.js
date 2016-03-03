@@ -1,5 +1,6 @@
 var React = require('react');
 var request = require('superagent');
+var browserHistory = require('react-router').browserHistory;
 
 var EventList = React.createClass({
     getDefaultProps: function() {
@@ -27,12 +28,16 @@ var EventList = React.createClass({
         }.bind(this));
     },
 
+    select: function(event) {
+        browserHistory.push('/editor/events/' + event.id);
+    },
+
     render: function() {
         return (
             <div>
                 {this.state.events.map(function(event) {
                     return (
-                        <div className="callout">
+                        <div className="callout" onClick={this.select.bind(this, event)}>
                             <h5>{event.name}</h5>
                             <h6>{event.start_date} - {event.end_date}</h6>
                             <p dangerouslySetInnerHTML={{__html: event.description}}></p>

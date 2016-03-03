@@ -2,7 +2,7 @@ var React = require('react');
 var request = require('superagent');
 
 var EventList = require('./EventList');
-var EventCreate = require('./EventCreate');
+var EventForm = require('./EventForm');
 
 var ClubEvents  = React.createClass({
     render: function() {
@@ -14,7 +14,7 @@ var ClubEvents  = React.createClass({
                 </div>
                 <div className="column medium-6">
                     <h5>Create event</h5><hr />
-                    <EventCreate club={this.props.params.slug} />
+                    <EventForm club={this.props.params.slug} />
                 </div>
             </div>
         );
