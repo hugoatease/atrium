@@ -38,7 +38,6 @@ class NewsResource(Resource):
     def get(self, news_id):
         return News.objects.with_id(news_id)
 
-
     @marshal_with(news_fields)
     def put(self, news_id):
         news = News.objects.with_id(news_id)

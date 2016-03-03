@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<div id="editor"></div>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+    atrium.renderEditor(document.getElementById('editor'));
+</script>
+{% endblock %}
