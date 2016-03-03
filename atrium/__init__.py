@@ -3,7 +3,6 @@ import requests
 from urllib import urlencode
 from atrium.schemas import db
 import settings
-from atrium.api import api
 from .auth import login_manager
 import jwt
 import cryptography.hazmat.primitives.serialization
@@ -11,11 +10,16 @@ from cryptography.hazmat.backends import default_backend
 from flask_login import login_user, logout_user
 from .auth import UserHandler
 from .schemas import User, Profile
+from boto.s3.connection import S3Connection
 
 app = Flask(__name__)
 app.config.from_object(settings)
 
 login_manager.init_app(app)
+
+s3conn = S3Connection(app.config['AWS_KEY'], app.config['AWS_SECRET'])
+
+from atrium.api import api
 
 db.init_app(app)
 api.init_app(app)

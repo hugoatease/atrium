@@ -5,6 +5,7 @@ var Route = require('react-router').Route;
 var browserHistory = require('react-router').browserHistory;
 
 var ClubEdit = require('./ClubEdit');
+var ProfileEdit = require('./ProfileEdit');
 
 var App = React.createClass({
    render: function() {
@@ -22,6 +23,7 @@ function renderEditor(container) {
             <Route path="/editor" component={App}>
                 <Route name="club-create" path="clubs/create" component={ClubEdit} />
                 <Route name="club-edit" path="clubs/:slug" component={ClubEdit} />
+                <Route name="profile-edit" path="profiles/:id" component={ProfileEdit} />
             </Route>
         </Router>
     ), container);

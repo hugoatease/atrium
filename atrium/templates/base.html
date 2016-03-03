@@ -15,7 +15,7 @@
     <div class="top-bar-right">
         <ul class="menu">
             {% if current_user.is_authenticated %}
-                <li><a>{{ current_user.user.first_name }} {{ current_user.user.last_name }}</a></li>
+                <li><a href="/editor/profiles/me">{{ current_user.user.first_name }} {{ current_user.user.last_name }}</a></li>
                 <li><a href="{{ url_for('logout') }}">Log out</a></li>
             {% else %}
                 <li><a href="{{ url_for('login', next=request.path) }}">Log in</a></li>
