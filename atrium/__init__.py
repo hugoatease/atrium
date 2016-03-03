@@ -11,6 +11,7 @@ from flask_login import login_user, logout_user
 from .auth import UserHandler
 from .schemas import User, Profile
 from boto.s3.connection import S3Connection
+from hashlib import md5
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -65,23 +66,22 @@ def login_return():
     print User.objects.filter(sub=sub).first()
 
     if User.objects.filter(sub=sub).first() is None:
-        user = User(sub=sub, email=info['email'], first_name=info['given_name'], last_name=info['family_name'])
+        user = User(sub=sub, email=info['email'])
         user.save()
         profile = Profile(
             user=user,
-            first_name=user.first_name,
-            last_name=user.last_name
+            first_name=info['given_name'],
+            last_name=info['family_name'],
+            photo='https://secure.gravatar.com/avatar/' + md5(info['email']).hexdigest() + '?d=identicon&s=200'
         )
         profile.save()
     else:
         user = User.objects.filter(sub=sub).first()
         user.email = info['email']
-        user.first_name = info['given_name']
-        user.last_name = info['family_name']
         user.save()
         profile = Profile.objects.filter(user=user).first()
-        profile.first_name = user.first_name
-        profile.last_name = user.last_name
+        profile.first_name = info['given_name']
+        profile.last_name = info['family_name']
         profile.save()
 
     login_user(UserHandler(user))

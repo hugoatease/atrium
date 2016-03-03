@@ -1,5 +1,5 @@
 from flask_login import LoginManager, UserMixin
-from .schemas import User
+from .schemas import User, Profile
 
 login_manager = LoginManager()
 
@@ -16,6 +16,9 @@ class UserHandler(UserMixin):
 
     def get_user(self):
         return self.user
+
+    def get_profile(self):
+        return Profile.objects(user=self.user).first()
 
 
 @login_manager.user_loader
