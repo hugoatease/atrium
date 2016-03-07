@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="medium-3 column">
+        {% if club.logo %}
+            <img src="{{club.logo}}" alt="{{club.name}} logo" width="200" /><br />
+        {% endif %}
+        <h4>{{club.name}}</h4>
+        <div class="small-up-3">
+            {% for member in club.members %}
+                <div class="column">
+                    <img class="thumbnail" src="{{member.photo}}" />
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="medium-9 column">
+        {% if club.description %}
+        <h4>Description</h4><hr />
+        {{club.description | safe}}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

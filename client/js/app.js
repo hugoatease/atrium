@@ -8,6 +8,8 @@ var ClubEdit = require('./ClubEdit');
 var ProfileEdit = require('./ProfileEdit');
 var ClubEvents = require('./ClubEvents');
 var EventEdit = require('./EventEdit');
+var ClubNews = require('./ClubNews');
+var NewsEdit = require('./NewsEdit');
 
 var App = React.createClass({
    render: function() {
@@ -28,6 +30,8 @@ function renderEditor(container) {
                 <Route name="profile-edit" path="profiles/:id" component={ProfileEdit} />
                 <Route name="club-events" path="clubs/:slug/events" component={ClubEvents} />
                 <Route name="event-edit" path="events/:event_id" component={EventEdit} />
+                <Route name="club-news" path="clubs/:slug/news" component={ClubNews} />
+                <Route name="news-edit" path="news/:news_id" component={NewsEdit} />
             </Route>
         </Router>
     ), container);

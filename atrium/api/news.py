@@ -1,5 +1,7 @@
+from flask import request
 from flask_restful import Resource, marshal_with, reqparse
-from atrium.schemas import News
+from flask_login import current_user
+from atrium.schemas import News, Club
 from .fields import news_fields
 import arrow
 
@@ -7,15 +9,17 @@ import arrow
 class NewsListResource(Resource):
     @marshal_with(news_fields)
     def get(self):
-        return list(News.objects.all())
+        query = News.objects
+        if 'club' in request.args:
+            query = query.filter(club=Club.objects.with_id(request.args['club']))
+
+        return list(query.all())
 
     @marshal_with(news_fields)
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=unicode, required=True)
         parser.add_argument('club', type=unicode)
-        parser.add_argument('date', type=unicode, required=True)
-        parser.add_argument('author', type=unicode, required=True)
         parser.add_argument('headline', type=unicode, required=True)
         parser.add_argument('content', type=unicode, required=True)
         args = parser.parse_args()
@@ -23,8 +27,8 @@ class NewsListResource(Resource):
         news = News(
             name=args['name'],
             club=args['club'],
-            date=arrow.get(args['date']).naive,
-            author=args['author'],
+            date=arrow.utcnow().datetime,
+            author=current_user.get_profile(),
             headline=args['headline'],
             content=args['content']
         )
