@@ -36,8 +36,8 @@ event_fields = {
     'name': fields.String,
     'club': fields.Nested(club_fields),
     'description': fields.String,
-    'start_date': fields.DateTime,
-    'end_date': fields.DateTime,
+    'start_date': fields.String,
+    'end_date': fields.String,
     'poster': fields.String,
     'place': fields.Nested(place_fields)
 }

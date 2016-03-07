@@ -35,18 +35,20 @@ var EventCreate = React.createClass({
                     this.setState({
                         name: res.body.name,
                         description: res.body.description,
-                        start_date: moment.utc(res.body.start_date),
-                        end_date: moment.utc(res.body.end_date),
+                        start_date: moment(res.body.start_date),
+                        end_date: moment(res.body.end_date),
                         place: {
                             name: res.body.place.name,
                             address: res.body.place.address
                         }
                     });
+                    console.log(this.state.start_date);
                 }.bind(this));
         }
     },
 
     changedStartDate: function(date) {
+        console.log(date);
         this.setState({
             start_date: date
         });

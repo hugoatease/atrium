@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, request, session, url_for
 import requests
 from urllib import urlencode
 from atrium.schemas import db
+from atrium.schemas import Club
 import settings
 from .auth import login_manager
 import jwt
@@ -15,6 +16,13 @@ from hashlib import md5
 
 app = Flask(__name__)
 app.config.from_object(settings)
+app.config['MONGODB_SETTINGS'] = {
+    'host': app.config['MONGODB_HOST'],
+    'port': app.config['MONGODB_PORT'],
+    'db': app.config['MONGODB_DB'],
+    'tz_aware': True
+}
+
 
 login_manager.init_app(app)
 
@@ -27,7 +35,8 @@ api.init_app(app)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    clubs = Club.objects.all()
+    return render_template('index.html', clubs=clubs)
 
 @app.route('/login')
 def login():
@@ -103,3 +112,8 @@ def editor():
 @app.route('/editor/<path:path>')
 def editor_all(path):
     return render_template('editor.html')
+
+@app.route('/clubs/<club_slug>')
+def clubs(club_slug):
+    club = Club.objects.with_id(club_slug)
+    return render_template('club.html', club=club)

@@ -32,8 +32,8 @@ class EventListResource(Resource):
             name=args['name'],
             club=args['club'],
             description=args['description'],
-            start_date=arrow.get(args['start_date']).naive,
-            end_date=arrow.get(args['end_date']).naive,
+            start_date=arrow.get(args['start_date']).datetime,
+            end_date=arrow.get(args['end_date']).datetime,
         )
 
         if 'place' in args.keys():
