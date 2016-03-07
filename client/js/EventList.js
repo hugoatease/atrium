@@ -1,6 +1,7 @@
 var React = require('react');
 var request = require('superagent');
 var browserHistory = require('react-router').browserHistory;
+var moment = require('moment');
 
 var EventList = React.createClass({
     getDefaultProps: function() {
@@ -39,7 +40,7 @@ var EventList = React.createClass({
                     return (
                         <div className="callout" onClick={this.select.bind(this, event)}>
                             <h5>{event.name}</h5>
-                            <h6>{event.start_date} - {event.end_date}</h6>
+                            <h6>{moment(event.start_date).format('LL LT')} - {moment(event.end_date).format('LL LT')}</h6>
                             <p dangerouslySetInnerHTML={{__html: event.description}}></p>
                         </div>
                     )

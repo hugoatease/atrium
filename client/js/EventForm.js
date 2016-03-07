@@ -3,6 +3,7 @@ var request = require('superagent');
 var ReactQuill = require('react-quill');
 var moment = require('moment');
 var DatePicker = require('react-datepicker');
+var TimePicker = require('react-time-picker');
 var clone = require('lodash/clone');
 var browserHistory = require('react-router').browserHistory;
 var moment = require('moment');
@@ -54,7 +55,19 @@ var EventCreate = React.createClass({
         });
     },
 
+    changedStartTime: function(datestring, date) {
+        this.setState({
+            start_date: date
+        });
+    },
+
     changedEndDate: function(date) {
+        this.setState({
+            end_date: date
+        });
+    },
+
+    changedEndTime: function(datestring, date) {
         this.setState({
             end_date: date
         });
@@ -124,14 +137,34 @@ var EventCreate = React.createClass({
                     <span>Event description</span>
                     <ReactQuill placeholder="Event description" value={this.state.description} theme="snow" onChange={this.changedDescription} />
                 </label>
-                <label>
-                    <span>Start date</span>
-                    <DatePicker selected={this.state.start_date} onChange={this.changedStartDate} />
-                </label>
-                <label>
-                    <span>End date</span>
-                    <DatePicker selected={this.state.end_date} onChange={this.changedEndDate} />
-                </label>
+                <div className="row">
+                    <div className="medium-6 columns">
+                        <label>
+                            <span>Start date</span>
+                            <DatePicker selected={this.state.start_date} onChange={this.changedStartDate} />
+                        </label>
+                    </div>
+                    <div className="medium-6 columns">
+                        <label>
+                            <span>Start hour</span><br />
+                            <TimePicker value={this.state.start_date} showArrows={false} format="HH mm" onChange={this.changedStartTime}/>
+                        </label>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="medium-6 columns">
+                        <label>
+                            <span>End date</span>
+                            <DatePicker selected={this.state.end_date} onChange={this.changedEndDate} />
+                        </label>
+                    </div>
+                    <div className="medium-6 columns">
+                        <label>
+                            <span>End hour</span><br />
+                            <TimePicker value={this.state.end_date} showArrows={false} format="HH mm" onChange={this.changedEndTime}/>
+                        </label>
+                    </div>
+                </div>
                 <label>
                     <span>Place name</span>
                     <input type="text" placeholder="Place name" value={this.state.place.name} onChange={this.changedPlaceName} />
