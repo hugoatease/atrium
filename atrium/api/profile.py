@@ -1,5 +1,5 @@
-from flask_login import current_user
-from flask_restful import Resource
+from flask_login import current_user, login_required
+from flask_restful import Resource, abort
 from atrium.schemas import Profile
 from flask_restful import reqparse, marshal_with
 from .fields import profile_fields
@@ -24,8 +24,12 @@ class ProfileResource(Resource):
         else:
             return Profile.objects.with_id(profile_id)
 
+    @login_required
     @marshal_with(profile_fields)
     def put(self, profile_id):
+        if profile_id != 'me' and not current_user.is_admin():
+            return abort(401)
+
         if profile_id == 'me':
             profile = Profile.objects.filter(user=current_user.get_user()).first()
         else:
@@ -50,8 +54,12 @@ class ProfileResource(Resource):
 
 
 class ProfilePhoto(Resource):
+    @login_required
     @marshal_with(profile_fields)
     def post(self, profile_id):
+        if profile_id != 'me' and not current_user.is_admin():
+            return abort(401)
+
         if profile_id == 'me':
             profile = Profile.objects.filter(user=current_user.get_user()).first()
         else:

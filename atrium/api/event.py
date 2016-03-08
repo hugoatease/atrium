@@ -1,5 +1,6 @@
 from flask import request, current_app
-from flask_restful import Resource, marshal_with, reqparse
+from flask_login import login_required, current_user
+from flask_restful import Resource, marshal_with, reqparse, abort
 from atrium.schemas import Event, Place, Club
 from .fields import event_fields
 import arrow
@@ -17,6 +18,7 @@ class EventListResource(Resource):
 
         return list(query.all())
 
+    @login_required
     @marshal_with(event_fields)
     def post(self):
         parser = reqparse.RequestParser()
@@ -27,6 +29,9 @@ class EventListResource(Resource):
         parser.add_argument('end_date', type=unicode, required=True)
         parser.add_argument('place', type=dict, store_missing=False)
         args = parser.parse_args()
+
+        if not current_user.is_admin() and not current_user.has_any_permission('club', args['club'], ['admin', 'events']):
+            return abort(401)
 
         event = Event(
             name=args['name'],
@@ -51,13 +56,16 @@ class EventResource(Resource):
     def get(self, event_id):
         return Event.objects.with_id(event_id)
 
+    @login_required
     @marshal_with(event_fields)
     def put(self, event_id):
         event = Event.objects.with_id(event_id)
 
+        if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
+            return abort(401)
+
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=unicode, store_missing=False)
-        parser.add_argument('club', type=unicode, store_missing=False)
         parser.add_argument('description', type=unicode, store_missing=False)
         parser.add_argument('start_date', type=unicode, store_missing=False)
         parser.add_argument('end_date', type=unicode, store_missing=False)
@@ -78,16 +86,24 @@ class EventResource(Resource):
         event.save()
         return event
 
+    @login_required
     def delete(self, event_id):
         event = Event.objects.with_id(event_id)
+        if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
+            return abort(401)
+
         event.delete()
         return '', 204
 
 
 class EventPoster(Resource):
+    @login_required
     @marshal_with(event_fields)
     def post(self, event_id):
         event = Event.objects.with_id(event_id)
+
+        if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
+            return abort(401)
 
         parser = reqparse.RequestParser()
         parser.add_argument('poster', type=werkzeug.datastructures.FileStorage, location='files')

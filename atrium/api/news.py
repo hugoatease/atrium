@@ -1,6 +1,6 @@
 from flask import request
-from flask_restful import Resource, marshal_with, reqparse
-from flask_login import current_user
+from flask_restful import Resource, marshal_with, reqparse, abort
+from flask_login import current_user, login_required
 from atrium.schemas import News, Club
 from .fields import news_fields
 import arrow
@@ -15,6 +15,7 @@ class NewsListResource(Resource):
 
         return list(query.all())
 
+    @login_required
     @marshal_with(news_fields)
     def post(self):
         parser = reqparse.RequestParser()
@@ -23,6 +24,9 @@ class NewsListResource(Resource):
         parser.add_argument('headline', type=unicode, required=True)
         parser.add_argument('content', type=unicode, required=True)
         args = parser.parse_args()
+
+        if not current_user.is_admin() and not current_user.has_any_permission('club', args['club'], ['admin', 'news']):
+            return abort(401)
 
         news = News(
             name=args['name'],
@@ -42,13 +46,16 @@ class NewsResource(Resource):
     def get(self, news_id):
         return News.objects.with_id(news_id)
 
+    @login_required
     @marshal_with(news_fields)
     def put(self, news_id):
         news = News.objects.with_id(news_id)
 
+        if not current_user.is_admin() and not current_user.has_any_permission('club', news.club.id, ['admin', 'news']):
+            return abort(401)
+
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=unicode, store_missing=False)
-        parser.add_argument('club', type=unicode, store_missing=False)
         parser.add_argument('date', type=unicode, store_missing=False)
         parser.add_argument('author', type=unicode, store_missing=False)
         parser.add_argument('headline', type=unicode, store_missing=False)
@@ -65,8 +72,11 @@ class NewsResource(Resource):
         news.save()
         return news
 
+    @login_required
     def delete(self, news_id):
         news = News.objects.with_id(news_id)
-        news.delete()
+        if not current_user.is_admin() and not current_user.has_any_permission('club', news.club.id, ['admin', 'news']):
+            return abort(401)
 
+        news.delete()
         return '', 204

@@ -1,4 +1,5 @@
-from flask_restful import Resource, marshal_with, reqparse, current_app
+from flask_restful import Resource, marshal_with, reqparse, current_app, abort
+from flask_login import login_required, current_user
 from .fields import club_fields, club_permissions_fields
 from atrium.schemas import Club, Profile, User
 import werkzeug.datastructures
@@ -11,8 +12,12 @@ class ClubListResource(Resource):
     def get(self):
         return list(Club.objects.all())
 
+    @login_required
     @marshal_with(club_fields)
     def post(self):
+        if not current_user.is_admin():
+            return abort(401)
+
         parser = reqparse.RequestParser()
         parser.add_argument('slug', type=unicode, required=True)
         parser.add_argument('name', type=unicode, required=True)
@@ -34,8 +39,12 @@ class ClubResource(Resource):
     def get(self, club_slug):
         return Club.objects.with_id(club_slug)
 
+    @login_required
     @marshal_with(club_fields)
     def put(self, club_slug):
+        if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
+            return abort(401)
+
         club = Club.objects.with_id(club_slug)
 
         parser = reqparse.RequestParser()
@@ -52,7 +61,11 @@ class ClubResource(Resource):
 
 
 class ClubMembersResource(Resource):
+    @login_required
     def post(self, club_slug):
+        if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
+            return abort(401)
+
         club = Club.objects.with_id(club_slug)
 
         parser = reqparse.RequestParser()
@@ -63,7 +76,11 @@ class ClubMembersResource(Resource):
 
         return 'OK', 200
 
+    @login_required
     def delete(self, club_slug):
+        if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
+            return abort(401)
+
         club = Club.objects.with_id(club_slug)
 
         parser = reqparse.RequestParser()
@@ -76,8 +93,12 @@ class ClubMembersResource(Resource):
 
 
 class ClubLogoResource(Resource):
+    @login_required
     @marshal_with(club_fields)
     def post(self, club_slug):
+        if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
+            return abort(401)
+
         club = Club.objects.with_id(club_slug)
 
         parser = reqparse.RequestParser()
@@ -98,6 +119,7 @@ class ClubLogoResource(Resource):
 
 
 class ClubPermissionsResource(Resource):
+    @login_required
     @marshal_with(club_permissions_fields)
     def get(self, club_slug):
         permissions = list(User.objects.aggregate(
@@ -115,5 +137,4 @@ class ClubPermissionsResource(Resource):
             return permission
 
         parsed_permissions = map(permissions_parse, permissions)
-        print parsed_permissions
         return parsed_permissions
