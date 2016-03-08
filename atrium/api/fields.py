@@ -1,9 +1,11 @@
 from flask_restful import fields
 
 user_fields = {
+    'id': fields.String,
     'sub': fields.String,
     'email': fields.String,
-    'admin': fields.Boolean
+    'admin': fields.Boolean,
+    'permissions': fields.List(fields.String)
 }
 
 profile_fields = {
@@ -50,4 +52,9 @@ news_fields = {
     'author': fields.Nested(profile_fields),
     'headline': fields.String,
     'content': fields.String
+}
+
+club_permissions_fields = {
+    '_id': fields.String,
+    'users': fields.List(fields.Nested(user_fields))
 }

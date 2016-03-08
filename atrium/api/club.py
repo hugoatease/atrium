@@ -1,6 +1,6 @@
 from flask_restful import Resource, marshal_with, reqparse, current_app
-from .fields import club_fields
-from atrium.schemas import Club, Profile
+from .fields import club_fields, club_permissions_fields
+from atrium.schemas import Club, Profile, User
 import werkzeug.datastructures
 from atrium import s3conn
 from boto.s3.key import Key
@@ -95,3 +95,25 @@ class ClubLogoResource(Resource):
         club.save()
 
         return club
+
+
+class ClubPermissionsResource(Resource):
+    @marshal_with(club_permissions_fields)
+    def get(self, club_slug):
+        permissions = list(User.objects.aggregate(
+            {'$match': {'permissions': {'$exists': True}}},
+            {'$unwind': '$permissions'},
+            {'$match': {'permissions': {'$regex': 'club:' + club_slug + '::'}}},
+            {'$group': {'_id': '$permissions', 'users': {'$push': '$_id'}}}
+        ))
+
+        def permissions_parse(permission):
+            def fetch_users(user):
+                return User.objects.with_id(user)
+            users = map(fetch_users, permission['users'])
+            permission['users'] = users
+            return permission
+
+        parsed_permissions = map(permissions_parse, permissions)
+        print parsed_permissions
+        return parsed_permissions

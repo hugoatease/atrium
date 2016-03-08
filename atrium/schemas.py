@@ -6,7 +6,8 @@ db = MongoEngine()
 class User(db.Document):
     sub = db.StringField(required=True)
     email = db.StringField(required=True)
-    admin = db.BooleanField()
+    admin = db.BooleanField(required=True, default=False)
+    permissions = db.ListField(db.StringField())
 
 
 class Profile(db.Document):
