@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, request, session, url_for
 import requests
 from urllib import urlencode
 from atrium.schemas import db
-from atrium.schemas import Club
+from atrium.schemas import Club, Event, News
 import settings
 from .auth import login_manager
 import jwt
@@ -13,6 +13,7 @@ from .auth import UserHandler
 from .schemas import User, Profile
 from boto.s3.connection import S3Connection
 from hashlib import md5
+import arrow
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -116,4 +117,20 @@ def editor_all(path):
 @app.route('/clubs/<club_slug>')
 def clubs(club_slug):
     club = Club.objects.with_id(club_slug)
-    return render_template('club.html', club=club)
+    next_event = Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').first()
+
+    current_event = None
+    if next_event is not None and arrow.get(next_event.end_date) > arrow.utcnow() > arrow.get(next_event.start_date):
+        current_event = next_event
+
+    next_events = list(Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').all())
+    if next_event is not None:
+        next_events.remove(next_event)
+
+    past_events = Event.objects(club=club, end_date__lt=str(arrow.utcnow())).order_by('-end_date').all()
+
+    news = News.objects(club=club).order_by('-end_date').all()
+
+    return render_template('club.html',
+                           club=club, current_event=current_event, next_event=next_event,
+                           next_events=next_events, past_events=past_events, news=news)
