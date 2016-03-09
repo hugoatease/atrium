@@ -3,6 +3,7 @@ var request = require('superagent');
 var moment = require('moment');
 var ReactQuill = require('react-quill');
 var browserHistory = require('react-router').browserHistory;
+var humane = require('humane-js');
 
 var NewsForm = React.createClass({
     getDefaultProps: function() {
@@ -15,7 +16,8 @@ var NewsForm = React.createClass({
         return {
             name: null,
             headline: null,
-            content: null
+            content: null,
+            club: null
         }
     },
 
@@ -42,17 +44,42 @@ var NewsForm = React.createClass({
             request.post('/api/news')
                 .send(news_data)
                 .end(function(err, res) {
-                    if (err) return;
-                    browserHistory.push('/editor/news/' + res.body.id);
+                    if (err) {
+                        humane.log('Failed to create news');
+                    }
+                    else {
+                        humane.log('Created news <b>' + res.body.id + '</b>');
+                        browserHistory.push('/editor/news/' + res.body.id);
+                    }
                 }.bind(this));
         }
         else {
             request.put('/api/news/' + this.props.news_id)
                 .send(news_data)
                 .end(function(err, res) {
-                    if (err) return;
+                    if (err) {
+                        humane.log('Failed to update news')
+                    }
+                    else {
+                        humane.log('Updated news <b>' + res.body.id + '</b>');
+                    }
                 }.bind(this));
         }
+    },
+
+    remove: function(ev) {
+        ev.preventDefault();
+        
+        request.del('/api/news/' + this.props.news_id)
+            .end(function(err) {
+                if (err) {
+                    humane.log('<b>Error</b> Failed to delete news');
+                }
+                else {
+                    humane.log('Deleted news ' + this.props.news_id);
+                    browserHistory.push('/editor/clubs/' + this.state.club.id + '/news');
+                }
+            }.bind(this));
     },
 
     onNameChange: function(ev) {
@@ -74,6 +101,11 @@ var NewsForm = React.createClass({
     },
 
     render: function() {
+        var del = null;
+        if (this.props.news_id) {
+            del = <button className="button alert" onClick={this.remove}>Delete news</button>;
+        }
+
         return (
             <form onSubmit={this.save}>
                 <label>
@@ -89,6 +121,8 @@ var NewsForm = React.createClass({
                     <ReactQuill placeholder="News content" value={this.state.content} theme="snow" onChange={this.onContentChange} />
                 </label>
                 <button type="submit" className="button success">Save news</button>
+                &nbsp;&nbsp;
+                {del}
             </form>
         );
     }
