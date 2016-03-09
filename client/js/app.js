@@ -3,7 +3,9 @@ var ReactDOM = require('react-dom');
 var Router = require('react-router').Router;
 var Route = require('react-router').Route;
 var browserHistory = require('react-router').browserHistory;
+var IndexRoute = require('react-router').IndexRoute;
 
+var Editor = require('./Editor');
 var ClubEdit = require('./ClubEdit');
 var ProfileEdit = require('./ProfileEdit');
 var ClubEvents = require('./ClubEvents');
@@ -26,6 +28,7 @@ function renderEditor(container) {
     ReactDOM.render((
         <Router history={browserHistory}>
             <Route path="/editor" component={App}>
+                <IndexRoute component={Editor} />
                 <Route name="club-create" path="clubs/create" component={ClubEdit} />
                 <Route name="club-edit" path="clubs/:slug" component={ClubEdit} />
                 <Route name="profile-edit" path="profiles/:id" component={ProfileEdit} />
