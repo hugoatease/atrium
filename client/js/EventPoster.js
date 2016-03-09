@@ -33,6 +33,16 @@ var EventPoster = React.createClass({
             }.bind(this));
     },
 
+    removePoster: function() {
+        request.del('/api/events/' + this.props.event_id + '/poster')
+            .end(function(err) {
+                if (err) return;
+                this.setState({
+                    poster: null
+                })
+            }.bind(this));
+    },
+
     render: function() {
         if (!this.state.poster) {
             var poster = (
@@ -46,7 +56,8 @@ var EventPoster = React.createClass({
         else {
             var poster = (
                 <div>
-                    <img src={this.state.poster} width="300" />
+                    <img src={this.state.poster} width="300" /><br />
+                    <button className="button alert" onClick={this.removePoster}>Remove poster</button>
                 </div>
             )
         }

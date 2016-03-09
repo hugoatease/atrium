@@ -7,6 +7,7 @@ var TimePicker = require('react-time-picker');
 var clone = require('lodash/clone');
 var browserHistory = require('react-router').browserHistory;
 var moment = require('moment');
+var humane = require('humane-js');
 
 var EventCreate = React.createClass({
     getDefaultProps: function() {
@@ -97,6 +98,11 @@ var EventCreate = React.createClass({
 
     save: function(ev) {
         ev.preventDefault();
+        if (!this.state.start_date || !this.state.end_date) {
+            humane.log('<b>Error</b> You must specify event start and end dates');
+            return;
+        }
+
         var event_data = {
             name: this.state.name,
             club: this.props.club,
@@ -113,20 +119,54 @@ var EventCreate = React.createClass({
             request.post('/api/events')
                 .send(event_data)
                 .end(function(err, res) {
-                    if (err) return;
-                    browserHistory.push('/editor/events/' + res.body.id);
+                    if (err) {
+                        humane.log('Failed to create event');
+                    }
+                    else {
+                        humane.log('Created event <b>' + res.body.id + '</b>');
+                        browserHistory.push('/editor/events/' + res.body.id);
+                    }
                 });
         }
         else {
             request.put('/api/events/' + this.props.event_id)
                 .send(event_data)
                 .end(function(err, res) {
-                    if (err) return;
+                    if (err) {
+                        humane.log('Failed to update event');
+                    }
+                    else {
+                        humane.log('Updated event <b>' + res.body.id + '</b>');
+                    }
                 });
         }
     },
 
     render: function() {
+        var start_hour = null;
+        if (this.state.start_date) {
+            start_hour = (
+                <div className="medium-6 columns">
+                    <label>
+                        <span>Start hour</span><br />
+                        <TimePicker value={this.state.start_date} showArrows={false} format="HH mm" onChange={this.changedStartTime}/>
+                    </label>
+                </div>
+            );
+        }
+
+        var end_hour = null;
+        if (this.state.end_date) {
+            end_hour = (
+                <div className="medium-6 columns">
+                    <label>
+                        <span>End hour</span><br />
+                        <TimePicker value={this.state.end_date} showArrows={false} format="HH mm" onChange={this.changedEndTime}/>
+                    </label>
+                </div>
+            );
+        }
+
         return (
             <form onSubmit={this.save}>
                 <label>
@@ -144,12 +184,7 @@ var EventCreate = React.createClass({
                             <DatePicker selected={this.state.start_date} onChange={this.changedStartDate} />
                         </label>
                     </div>
-                    <div className="medium-6 columns">
-                        <label>
-                            <span>Start hour</span><br />
-                            <TimePicker value={this.state.start_date} showArrows={false} format="HH mm" onChange={this.changedStartTime}/>
-                        </label>
-                    </div>
+                    {start_hour}
                 </div>
                 <div className="row">
                     <div className="medium-6 columns">
@@ -158,12 +193,7 @@ var EventCreate = React.createClass({
                             <DatePicker selected={this.state.end_date} onChange={this.changedEndDate} />
                         </label>
                     </div>
-                    <div className="medium-6 columns">
-                        <label>
-                            <span>End hour</span><br />
-                            <TimePicker value={this.state.end_date} showArrows={false} format="HH mm" onChange={this.changedEndTime}/>
-                        </label>
-                    </div>
+                    {end_hour}
                 </div>
                 <label>
                     <span>Place name</span>

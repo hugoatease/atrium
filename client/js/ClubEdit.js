@@ -128,7 +128,7 @@ var ClubEdit = React.createClass({
 
     deletePhoto: function(ev) {
         ev.preventDefault();
-        
+
         request.del('/api/clubs/' + this.state.slug + '/logo')
             .end(function(err, res) {
                 if (err) return;

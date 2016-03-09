@@ -120,3 +120,19 @@ class EventPoster(Resource):
         event.save()
 
         return event
+
+    @login_required
+    def delete(self, event_id):
+        event = Event.objects.with_id(event_id)
+
+        if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
+            return abort(401)
+
+        event.poster = None
+        event.save()
+
+        bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
+        key = bucket.get_key('events/' + str(event.id))
+        key.delete()
+
+        return '', 204
