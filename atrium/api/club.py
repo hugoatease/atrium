@@ -49,7 +49,7 @@ class ClubResource(Resource):
 
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=unicode, store_missing=False)
-        parser.add_argument('description', type='unicode', store_missing=False)
+        parser.add_argument('description', type=unicode, store_missing=False)
         args = parser.parse_args()
 
         for field in ['name', 'description']:
@@ -116,6 +116,23 @@ class ClubLogoResource(Resource):
         club.save()
 
         return club
+
+    @login_required
+    def delete(self, club_slug):
+        if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
+            return abort(401)
+
+        club = Club.objects.with_id(club_slug)
+        club.logo = None
+        club.save()
+
+        bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
+        key = bucket.get_key('clubs/' + str(club.id))
+        key.delete()
+
+        return '', 204
+
+
 
 
 class ClubPermissionsResource(Resource):

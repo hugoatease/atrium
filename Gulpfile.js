@@ -19,6 +19,7 @@ gulp.task('app', function() {
     .bundle()
     .pipe(source('app.js'))
     .pipe(buffer())
+    .pipe(uglify())
     .pipe(gulp.dest('atrium/static/'))
 });
 

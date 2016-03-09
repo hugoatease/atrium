@@ -21,6 +21,7 @@ profile_fields = {
 }
 
 club_fields = {
+    'id': fields.String,
     'slug': fields.String,
     'name': fields.String,
     'logo': fields.String,

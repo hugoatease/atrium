@@ -4,6 +4,8 @@ var slug = require('slug');
 var ReactQuill = require('react-quill');
 var Dropzone = require('react-dropzone');
 var MemberSearch = require('./MemberSearch');
+var humane = require('humane-js');
+var browserHistory = require('react-router').browserHistory;
 
 
 var ClubEdit = React.createClass({
@@ -60,17 +62,39 @@ var ClubEdit = React.createClass({
         });
     },
 
-    save: function() {
-        request.post('/api/clubs')
-            .send({
-                slug: this.state.slug,
-                name: this.state.name,
-                description: this.state.description
-            })
-            .end(function(err, res) {
-                if (err) return;
-                alert('OK');
-            });
+    save: function(ev) {
+        ev.preventDefault();
+        var data = {
+            slug: this.state.slug,
+            name: this.state.name,
+            description: this.state.description
+        };
+
+        if (!this.props.params.slug) {
+            request.post('/api/clubs')
+                .send(data)
+                .end(function(err, res) {
+                    if (err) {
+                        humane.log('Error creating club');
+                    }
+                    else {
+                        humane.log('Created club <b>' + res.body.id + '</b>');
+                        browserHistory.push('/editor/clubs/' + res.body.id);
+                    }
+                }.bind(this));;
+        }
+        else {
+            request.put('/api/clubs/' + this.props.params.slug)
+                .send(data)
+                .end(function(err, res) {
+                    if (err) {
+                        humane.log('Error updating club');
+                    }
+                    else {
+                        humane.log('Updated club <b>' + res.body.id + '</b>');
+                    }
+                }.bind(this));
+        }
     },
 
     addMember: function(profile) {
@@ -102,22 +126,50 @@ var ClubEdit = React.createClass({
             }.bind(this));
     },
 
+    deletePhoto: function(ev) {
+        ev.preventDefault();
+        
+        request.del('/api/clubs/' + this.state.slug + '/logo')
+            .end(function(err, res) {
+                if (err) return;
+                this.fetch(this.state.slug);
+            }.bind(this));
+    },
+
     render: function() {
-        if (!this.state.logo) {
-            var logo = (
-                <Dropzone multiple={false} onDrop={this.uploadPhoto}>
-                    {!this.state.uploading ? <span>
-                        Drop your logo or click to select file.
-                    </span> : <span>Uploading logo...</span>}
-                </Dropzone>
-            );
+        var logo = null;
+        if (this.props.params.slug) {
+            if (!this.state.logo) {
+                var logo = (
+                    <Dropzone multiple={false} onDrop={this.uploadPhoto}>
+                        {!this.state.uploading ? <span>
+                            Drop your logo or click to select file.
+                        </span> : <span>Uploading logo...</span>}
+                    </Dropzone>
+                );
+            }
+            else {
+                var logo = (
+                    <div>
+                        <img src={this.state.logo} /><br />
+                        <button className="button alert" onClick={this.deletePhoto}>Delete logo</button>
+                    </div>
+                )
+            }
         }
-        else {
-            var logo = (
-                <div>
-                    <img src={this.state.logo} width="100" />
+
+        var members = null;
+        if (this.props.params.slug) {
+            members = (
+                <div className="medium-6 column">
+                    <h5>Club members</h5><hr />
+                    <MemberSearch profiles={this.state.members} callback={this.removeMember} />
+
+                    <h6>Add members</h6>
+                    <p>Add club members by clicking on them</p>
+                    <MemberSearch callback={this.addMember} />
                 </div>
-            )
+            );
         }
 
         return (
@@ -141,14 +193,7 @@ var ClubEdit = React.createClass({
                         <button type="submit" className="button success">Save</button>
                     </form>
                 </div>
-                <div className="medium-6 column">
-                    <h5>Club members</h5><hr />
-                    <MemberSearch profiles={this.state.members} callback={this.removeMember} />
-
-                    <h6>Add members</h6>
-                    <p>Add club members by clicking on them</p>
-                    <MemberSearch callback={this.addMember} />
-                </div>
+                {members}
             </div>
         )
     }

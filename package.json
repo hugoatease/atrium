@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "foundation-sites": "^6.2.0",
+    "humane-js": "^3.2.2",
     "lodash": "^4.6.1",
     "moment": "^2.11.2",
     "react": "^0.14.7",
