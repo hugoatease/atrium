@@ -29,7 +29,8 @@ var ProfileSearch = React.createClass({
         }
         else {
             this.setState({
-                profiles: this.props.profiles
+                profiles: this.props.profiles,
+                profiles_filtered: this.props.profiles
             });
         }
     },

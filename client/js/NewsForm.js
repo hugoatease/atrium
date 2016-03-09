@@ -2,6 +2,7 @@ var React = require('react');
 var request = require('superagent');
 var moment = require('moment');
 var ReactQuill = require('react-quill');
+var browserHistory = require('react-router').browserHistory;
 
 var NewsForm = React.createClass({
     getDefaultProps: function() {
@@ -42,6 +43,7 @@ var NewsForm = React.createClass({
                 .send(news_data)
                 .end(function(err, res) {
                     if (err) return;
+                    browserHistory.push('/editor/news/' + res.body.id);
                 }.bind(this));
         }
         else {

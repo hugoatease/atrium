@@ -4,6 +4,7 @@ from .club import ClubListResource, ClubResource, ClubMembersResource, ClubLogoR
 from .event import EventListResource, EventResource, EventPoster
 from .news import NewsListResource, NewsResource
 from .users import UsersListResource, UsersResource, UsersPermissionsResource
+from .permissions import PermissionsResource
 
 api = Api()
 
@@ -27,3 +28,5 @@ api.add_resource(NewsResource, '/api/news/<news_id>')
 api.add_resource(UsersListResource, '/api/users')
 api.add_resource(UsersResource, '/api/users/<user_id>')
 api.add_resource(UsersPermissionsResource, '/api/users/<user_id>/permissions')
+
+api.add_resource(PermissionsResource, '/api/permissions')

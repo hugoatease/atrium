@@ -130,10 +130,10 @@ class ClubPermissionsResource(Resource):
         ))
 
         def permissions_parse(permission):
-            def fetch_users(user):
-                return User.objects.with_id(user)
-            users = map(fetch_users, permission['users'])
-            permission['users'] = users
+            def fetch_profiles(user):
+                return Profile.objects(user=user).first()
+            profiles = map(fetch_profiles, permission['users'])
+            permission['profiles'] = profiles
             return permission
 
         parsed_permissions = map(permissions_parse, permissions)

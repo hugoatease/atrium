@@ -56,5 +56,5 @@ news_fields = {
 
 club_permissions_fields = {
     '_id': fields.String,
-    'users': fields.List(fields.Nested(user_fields))
+    'profiles': fields.List(fields.Nested(profile_fields))
 }

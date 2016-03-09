@@ -34,7 +34,7 @@ class UsersPermissionsResource(Resource):
             if permission['realm'] != 'club':
                 return abort(401)
             club = permission['resource']
-            if not current_user.has_any_permission('club', club, 'admin'):
+            if not current_user.has_any_permission('club', club, ['admin']):
                 return abort(401)
             User.objects.with_id(user_id).update(add_to_set__permissions=args['permission'])
 
@@ -47,6 +47,9 @@ class UsersPermissionsResource(Resource):
         parser.add_argument('permission', type=str, required=True)
         args = parser.parse_args()
 
+        if user_id == current_user.get_id():
+            return abort(401)
+
         if current_user.is_admin():
             User.objects.with_id(user_id).update(pull__permissions=args['permission'])
         else:
@@ -54,7 +57,7 @@ class UsersPermissionsResource(Resource):
             if permission['realm'] != 'club':
                 return abort(401)
             club = permission['resource']
-            if not current_user.has_any_permission('club', club, 'admin'):
+            if not current_user.has_any_permission('club', club, ['admin']):
                 return abort(401)
             User.objects.with_id(user_id).update(pull__permissions=args['permission'])
 

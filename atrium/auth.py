@@ -4,6 +4,16 @@ from .schemas import User, Profile
 login_manager = LoginManager()
 
 
+permissions = {
+    'club': {
+        'admin': 'admin - User manages all club data',
+        'edit': 'edit - User can edit club details and members',
+        'events': 'events - User can manage club events',
+        'news': 'news - User can manage club news'
+    }
+}
+
+
 def build_permission(realm, resource, permission):
     return realm + ':' + resource + '::' + permission
 
