@@ -1,25 +1,67 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="row">
-    <h4>Welcome to Atrium</h4>
-    <p>
-        Atrium is a place that brings together your school's clubs and help you stay up to date with
-        their news and events.
-    </p>
-    <hr />
+    <div class="small-12 column">
+        <h4>Welcome to Atrium</h4>
+        <p>
+            Atrium is a place that brings together your school's clubs and help you stay up to date with
+            their news and events.
+        </p>
+    </div>
 </div>
 <div class="row">
-    <h4>ISEN clubs</h4>
-    <div class="small-up-1 medium-up-4 large-up-6">
-        {% for club in clubs %}
-            <div class="column callout">
-                <a href="{{ url_for('clubs', club_slug=club.slug)}}">
-                    <img src="{{club.logo}}" alt="{{club.logo}} logo"/>
-                    <br /><br />
-                    <h5 align="center">{{club.name}}</h5>
-                </a>
+    <div class="small-12 column">
+        <h4>Clubs</h4>
+        <div class="small-up-1 medium-up-4 large-up-6">
+            {% for club in clubs %}
+                <div class="column callout">
+                    <a href="{{ url_for('clubs', club_slug=club._id)}}">
+                        {{club.id}}
+                        {% if club.logo %}
+                            <img src="{{club.logo}}" alt="{{club.logo}} logo"/>
+                            <br /><br />
+                        {% endif %}
+                        <h5 align="center">{{club.name}}</h5>
+                        {% if club.upcoming %}
+                            <h6>{{club.upcoming}} events upcoming</h6>
+                        {% endif %}
+                        {% if club.news_published %}
+                            <h6>{{club.news_published}} news this month</h6>
+                        {% endif %}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="medium-6 column">
+        <h4>This month's news</h4>
+        {% for news_item in news %}
+            <div class="callout">
+                <h5>{{news_item.name}}</h5>
+                <h6>{{news_item.date.strftime('%d %B %Y %H:%M')}} by {{news_item.author.first_name}} {{news_item.author.last_name}} 7
+                    at <a href="{{url_for('clubs', club_slug=news_item.club.id)}}">{{news_item.club.name}}</a></h6>
+                <p>{{news_item.headline}}</p>
+                <hr />
+                <p>{{news_item.content|safe}}</p>
             </div>
         {% endfor %}
+    </div>
+    <div class="medium-6 column">
+        {% if current_events %}
+            <h4>Current events</h4>
+            {% for event in current_events %}
+                {% include 'event.html' %}
+            {% endfor %}
+        {% endif %}
+        {% if next_events %}
+            <hr />
+            <h4>Upcoming events</h4>
+            {% for event in next_events %}
+                {% include 'event.html' %}
+            {% endfor %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -36,8 +36,42 @@ api.init_app(app)
 
 @app.route('/')
 def index():
-    clubs = Club.objects.all()
-    return render_template('index.html', clubs=clubs)
+    clubs = list(Club.objects.aggregate(
+        {'$lookup': {'from': 'event', 'localField': '_id', 'foreignField': 'club', 'as': 'events'}},
+        {'$lookup': {'from': 'news', 'localField': '_id', 'foreignField': 'club', 'as': 'news'}}
+    ))
+
+    def club_stats(club):
+        upcoming = 0
+        news_published = 0
+        for event in club['events']:
+            if arrow.get(event['start_date']) > arrow.utcnow():
+                upcoming += 1
+
+        for news in club['news']:
+            if news['date'] > arrow.utcnow().replace(months=-1):
+                news_published += 1
+
+        if upcoming > 0:
+            club['upcoming'] = upcoming
+
+        if news_published > 0:
+            club['news_published'] = news_published
+
+        club['weight'] = upcoming + news_published
+
+        return club
+
+    clubs = map(club_stats, clubs)
+    clubs = sorted(clubs, key=lambda club: club['weight'], reverse=True)
+
+    news = News.objects(date__gte=str(arrow.utcnow().replace(months=-1))).all()
+
+    current_events = Event.objects(end_date__gt=str(arrow.utcnow()), start_date__lte=str(arrow.utcnow())).order_by('end_date').all()
+    next_events = Event.objects(start_date__gte=str(arrow.utcnow())).order_by('end_date').all()
+
+    return render_template('index.html', clubs=clubs, news=news,
+                           current_events=current_events, next_events=next_events)
 
 @app.route('/login')
 def login():
