@@ -15,6 +15,7 @@ from .schemas import User, Profile
 from boto.s3.connection import S3Connection
 from hashlib import md5
 import arrow
+from flask_login import current_user, login_required
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -96,7 +97,7 @@ def login():
 
     params = urlencode(params)
 
-    if 'login_next' in request.args:
+    if 'next' in request.args:
         session['login_next'] = request.args['next']
 
     return redirect(app.config['OPENID_AUTHORIZE_ENDPOINT'] + '?' + params)
@@ -150,10 +151,12 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route('/editor')
+@login_required
 def editor():
     return render_template('editor.html')
 
 @app.route('/editor/<path:path>')
+@login_required
 def editor_all(path):
     return render_template('editor.html')
 
@@ -177,3 +180,12 @@ def clubs(club_slug):
     return render_template('club.html',
                            club=club, current_event=current_event, next_event=next_event,
                            next_events=next_events, past_events=past_events, news=news)
+
+@app.route('/enroll/<token>')
+@login_required
+def enroll(token):
+    token = jwt.decode(token, app.config['SECRET_KEY'])
+    user = current_user.get_user()
+    user.update(add_to_set__permissions=token['permission'])
+
+    return redirect(url_for('editor'))

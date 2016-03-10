@@ -1,4 +1,5 @@
-from flask_login import LoginManager, UserMixin
+from flask import request
+from flask_login import LoginManager, UserMixin, redirect, url_for
 from .schemas import User, Profile
 
 login_manager = LoginManager()
@@ -62,3 +63,7 @@ class UserHandler(UserMixin):
 @login_manager.user_loader
 def load_user(user_id):
     return UserHandler(User.objects.with_id(user_id))
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return redirect(url_for('login', next=request.path))
