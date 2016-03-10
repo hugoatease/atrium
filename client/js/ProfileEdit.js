@@ -62,6 +62,16 @@ var ProfileEdit = React.createClass({
             }.bind(this));
     },
 
+    removePhoto: function() {
+        request.del('/api/profiles/me/photo')
+            .end(function(err) {
+                if (err) return;
+                this.setState({
+                    photo: null
+                });
+            }.bind(this));
+    },
+
     render: function() {
         if (!this.state.photo) {
             var photo = (
@@ -75,7 +85,8 @@ var ProfileEdit = React.createClass({
         else {
             var photo = (
                 <div>
-                    <img src={this.state.photo} />
+                    <img src={this.state.photo} /><br /><br />
+                    <button className="button alert" onClick={this.removePhoto}>Remove photo</button>
                 </div>
             )
         }

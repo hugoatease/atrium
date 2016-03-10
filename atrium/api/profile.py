@@ -85,3 +85,25 @@ class ProfilePhoto(Resource):
         profile.save()
 
         return profile
+
+    @login_required
+    def delete(self, profile_id):
+        if profile_id != 'me' and not current_user.is_admin():
+            return abort(401)
+
+        if profile_id == 'me':
+            profile = Profile.objects.filter(user=current_user.get_user()).first()
+        else:
+            profile = Profile.objects.with_id(profile_id)
+
+        photo_url = profile.photo
+
+        profile.photo = None
+        profile.save()
+
+        if 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/profiles/' in photo_url:
+            bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
+            key = bucket.get_key('profiles/' + str(profile.id))
+            key.delete()
+
+        return '', 204
