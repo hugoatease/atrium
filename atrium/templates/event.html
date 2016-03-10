@@ -12,7 +12,7 @@
                 <h5>{{type}}</h5>
             {% endif %}
             <h3>{{event.name}}</h3>
-            <small>By <a href="{{url_for('clubs', club_slug=event.club.id)}}">{{event.club.name}}</a></small>
+            <small>{{gettext('By')}} <a href="{{url_for('clubs', club_slug=event.club.id)}}">{{event.club.name}}</a></small>
             <p>{{event.description|safe}}</p>
             <h6>{{event.start_date.strftime('%d %B %Y %H:%M')}}</h6>
             <h6>{{event.end_date.strftime('%d %B %Y %H:%M')}}</h6>

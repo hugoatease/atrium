@@ -1,4 +1,5 @@
 from flask import Flask, render_template, redirect, request, session, url_for
+from flask_babel import Babel
 import requests
 from urllib import urlencode
 from atrium.schemas import db
@@ -33,6 +34,14 @@ from atrium.api import api
 
 db.init_app(app)
 api.init_app(app)
+
+babel = Babel(app)
+@babel.localeselector
+def get_locale():
+    guess = request.accept_languages.best_match(['en', 'fr'])
+    if not guess:
+        guess = 'en'
+    return guess
 
 @app.route('/')
 def index():

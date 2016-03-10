@@ -1,0 +1,93 @@
+# French translations for PROJECT.
+# Copyright (C) 2016 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2016-03-10 11:36+0100\n"
+"PO-Revision-Date: 2016-03-10 11:39+0100\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.2.0\n"
+"Last-Translator: \n"
+"X-Generator: Poedit 1.8.6\n"
+
+#: atrium/templates/base.html:19
+msgid "Club editor"
+msgstr "Editeur de clubs"
+
+#: atrium/templates/base.html:20
+msgid "Log out"
+msgstr "Déconnexion"
+
+#: atrium/templates/base.html:22
+msgid "Log in"
+msgstr "Connexion"
+
+#: atrium/templates/club.html:25
+msgid "Next Event"
+msgstr "A venir"
+
+#: atrium/templates/club.html:35 atrium/templates/index.html:43
+msgid "by"
+msgstr "par"
+
+#: atrium/templates/club.html:44
+msgid "Next events"
+msgstr "Evènements à venir"
+
+#: atrium/templates/club.html:51
+msgid "Past events"
+msgstr "Evènements passés"
+
+#: atrium/templates/event.html:15
+msgid "By"
+msgstr "Par"
+
+#: atrium/templates/index.html:5
+msgid "Welcome to Atrium"
+msgstr "Bienvenue sur Atrium"
+
+#: atrium/templates/index.html:7
+msgid ""
+"Atrium is a place that brings together your school's clubs and help you "
+"stay up to date with\n"
+"            their news and events."
+msgstr ""
+"Atrium est une plateforme rassemblant les associations de votre école, "
+"vous permettant de rester au courant de leurs actualités et évènements."
+
+#: atrium/templates/index.html:14
+msgid "Clubs"
+msgstr "Clubs"
+
+#: atrium/templates/index.html:26
+msgid "events upcoming"
+msgstr "évènements à venir"
+
+#: atrium/templates/index.html:29
+msgid "news this month"
+msgstr "actualités ce mois-ci"
+
+#: atrium/templates/index.html:39
+msgid "This month's news"
+msgstr "Actualités du mois"
+
+#: atrium/templates/index.html:44
+msgid "at"
+msgstr "à"
+
+#: atrium/templates/index.html:53
+msgid "Current events"
+msgstr "Evènements en cours"
+
+#: atrium/templates/index.html:60
+msgid "Upcoming events"
+msgstr "Evènements à venir"
