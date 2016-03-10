@@ -10,6 +10,7 @@ from boto.s3.key import Key
 import werkzeug.datastructures
 import bleach
 from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
+from hashlib import md5
 
 
 class ProfileListResource(Resource):
@@ -98,7 +99,7 @@ class ProfilePhoto(Resource):
 
         photo_url = profile.photo
 
-        profile.photo = None
+        profile.photo = 'https://secure.gravatar.com/avatar/' + md5(profile.user.email).hexdigest() + '?d=identicon&s=200'
         profile.save()
 
         if 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/profiles/' in photo_url:

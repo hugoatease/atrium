@@ -22,6 +22,9 @@ var ProfileEdit = React.createClass({
             .end(function(err, res) {
                 if (err) return;
                 this.setState(res.body);
+                if (this.state.photo.includes('https://secure.gravatar.com/avatar/')) {
+                    this.setState({photo: null});
+                }
             }.bind(this));
     },
 
@@ -62,7 +65,9 @@ var ProfileEdit = React.createClass({
             }.bind(this));
     },
 
-    removePhoto: function() {
+    removePhoto: function(ev) {
+        ev.preventDefault();
+        
         request.del('/api/profiles/me/photo')
             .end(function(err) {
                 if (err) return;
