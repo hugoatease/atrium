@@ -1,7 +1,7 @@
 import bleach
 
 ALLOWED_TAGS = bleach.ALLOWED_TAGS + [
-    'div', 'span', 's', 'u', 'img'
+    'div', 'span', 's', 'u', 'img', 'br'
 ]
 
 ALLOWED_STYLES = bleach.ALLOWED_STYLES + [
