@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, session, url_for
+from flask import Flask, render_template, redirect, request, session, url_for, got_request_exception
 from flask_babel import Babel
 import requests
 from urllib import urlencode
@@ -16,6 +16,9 @@ from boto.s3.connection import S3Connection
 from hashlib import md5
 import arrow
 from flask_login import current_user, login_required
+import os
+import rollbar
+import rollbar.contrib.flask
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -35,6 +38,15 @@ from atrium.api import api
 
 db.init_app(app)
 api.init_app(app)
+
+if 'ROLLBAR_TOKEN' in app.config:
+    rollbar.init(app.config['ROLLBAR_TOKEN'], 'flask',
+                 root=os.path.dirname(os.path.realpath(__file__)), allow_logging_basic_config=False)
+
+@app.before_first_request
+def rollbar_handler():
+    if 'ROLLBAR_TOKEN' in app.config:
+        got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 
 babel = Babel(app)
 @babel.localeselector
