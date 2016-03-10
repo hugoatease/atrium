@@ -19,7 +19,7 @@ var EventCreate = React.createClass({
     getInitialState: function() {
         return {
             name: null,
-            description: null,
+            description: 'Enter description here',
             start_date: null,
             end_date: null,
             place: {
@@ -44,7 +44,10 @@ var EventCreate = React.createClass({
                             address: res.body.place.address
                         }
                     });
-                    console.log(this.state.start_date);
+
+                    if (!this.state.description) {
+                        this.setState({description: 'Enter description here'});
+                    }
                 }.bind(this));
         }
     },

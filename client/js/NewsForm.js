@@ -16,7 +16,7 @@ var NewsForm = React.createClass({
         return {
             name: null,
             headline: null,
-            content: null,
+            content: 'Enter content here',
             club: null
         }
     },
@@ -27,6 +27,9 @@ var NewsForm = React.createClass({
                 .end(function(err, res) {
                     if (err) return;
                     this.setState(res.body);
+                    if (!this.state.content) {
+                        this.setState({content: 'Enter content here'});
+                    }
                 }.bind(this));
         }
     },

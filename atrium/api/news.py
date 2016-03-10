@@ -4,6 +4,8 @@ from flask_login import current_user, login_required
 from atrium.schemas import News, Club
 from .fields import news_fields
 import arrow
+import bleach
+from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
 
 
 class NewsListResource(Resource):
@@ -34,7 +36,7 @@ class NewsListResource(Resource):
             date=arrow.utcnow().datetime,
             author=current_user.get_profile(),
             headline=args['headline'],
-            content=args['content']
+            content=bleach.clean(args['content'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
         )
 
         news.save()
@@ -62,9 +64,12 @@ class NewsResource(Resource):
         parser.add_argument('content', type=unicode, store_missing=False)
         args = parser.parse_args()
 
-        for field in ['name', 'club', 'author', 'headline', 'content']:
+        for field in ['name', 'club', 'author', 'headline']:
             if field in args.keys():
                 setattr(news, field, args[field])
+
+        if 'content' in args.keys():
+            news.content = bleach.clean(args['content'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
 
         if 'date' in args.keys():
             news.date = arrow.get(args['date']).naive

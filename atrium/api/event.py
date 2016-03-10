@@ -7,6 +7,8 @@ import arrow
 import werkzeug.datastructures
 from atrium import s3conn
 from boto.s3.key import Key
+import bleach
+from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
 
 
 class EventListResource(Resource):
@@ -36,7 +38,7 @@ class EventListResource(Resource):
         event = Event(
             name=args['name'],
             club=args['club'],
-            description=args['description'],
+            description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES),
             start_date=arrow.get(args['start_date']).datetime,
             end_date=arrow.get(args['end_date']).datetime,
         )
@@ -72,7 +74,7 @@ class EventResource(Resource):
         parser.add_argument('place', type=dict, store_missing=False)
         args = parser.parse_args()
 
-        for field in ['name', 'club', 'description']:
+        for field in ['name', 'club']:
             if field in args.keys():
                 setattr(event, field, args[field])
 
@@ -80,7 +82,10 @@ class EventResource(Resource):
             if field in args.keys():
                 setattr(event, field, arrow.get(args[field]).naive)
 
-        if 'place' in args:
+        if 'description' in args.keys():
+            event.description = bleach.clean(args['description'], tags=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
+
+        if 'place' in args.keys():
             event.place = Place(name=args['place']['name'], address=args['place']['address'])
 
         event.save()

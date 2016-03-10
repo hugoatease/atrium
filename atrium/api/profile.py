@@ -8,6 +8,8 @@ from atrium import s3conn
 from flask import current_app
 from boto.s3.key import Key
 import werkzeug.datastructures
+import bleach
+from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
 
 
 class ProfileListResource(Resource):
@@ -42,9 +44,12 @@ class ProfileResource(Resource):
         parser.add_argument('birthday', type=unicode, store_missing=False)
         args = parser.parse_args()
 
-        for field in ['facebook_id', 'twitter_id', 'biography']:
+        for field in ['facebook_id', 'twitter_id']:
             if field in args.keys():
                 setattr(profile, field, args[field])
+
+        if 'biography' in args.keys():
+            profile.biography = bleach.clean(args['biography'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
 
         if 'birthday' in args.keys():
             profile.birthday = arrow.get(args['birthday']).naive

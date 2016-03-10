@@ -5,6 +5,8 @@ from atrium.schemas import Club, Profile, User
 import werkzeug.datastructures
 from atrium import s3conn
 from boto.s3.key import Key
+import bleach
+from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
 
 
 class ClubListResource(Resource):
@@ -27,7 +29,7 @@ class ClubListResource(Resource):
         club = Club(
             slug=args['slug'],
             name=args['name'],
-            description=args['description']
+            description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
         )
 
         club.save()
@@ -52,9 +54,12 @@ class ClubResource(Resource):
         parser.add_argument('description', type=unicode, store_missing=False)
         args = parser.parse_args()
 
-        for field in ['name', 'description']:
+        for field in ['name']:
             if field in args.keys():
                 setattr(club, field, args[field])
+
+        if 'description' in args.keys():
+            club.description = bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
 
         club.save()
         return club
@@ -131,8 +136,6 @@ class ClubLogoResource(Resource):
         key.delete()
 
         return '', 204
-
-
 
 
 class ClubPermissionsResource(Resource):
