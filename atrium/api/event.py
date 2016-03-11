@@ -83,7 +83,8 @@ class EventResource(Resource):
                 setattr(event, field, arrow.get(args[field]).naive)
 
         if 'description' in args.keys():
-            event.description = bleach.clean(args['description'], tags=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
+            event.description = bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
+            print event.description
 
         if 'place' in args.keys():
             event.place = Place(name=args['place']['name'], address=args['place']['address'])
