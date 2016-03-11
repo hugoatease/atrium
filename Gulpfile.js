@@ -6,9 +6,10 @@ var reactify = require('reactify');
 var source = require('vinyl-source-stream');
 var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
+var concat = require('gulp-concat');
 
 gulp.task('default', ['build']);
-gulp.task('build', ['app', 'styles']);
+gulp.task('build', ['app', 'styles', 'vendor']);
 
 gulp.task('app', function() {
    return browserify({
@@ -28,4 +29,13 @@ gulp.task('styles', function() {
        .pipe(sass())
        .pipe(minifyCss())
        .pipe(gulp.dest('atrium/static/'));
+});
+
+gulp.task('vendor', function() {
+    return gulp.src([
+        'node_modules/jquery/dist/jquery.min.js',
+        'node_modules/foundation-sites/dist/foundation.min.js'
+    ])
+    .pipe(concat('vendor.js'))
+    .pipe(gulp.dest('atrium/static/'));
 });

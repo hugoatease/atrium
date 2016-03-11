@@ -12,9 +12,9 @@
 <div class="row">
     <div class="small-12 column">
         <h4>{{gettext('Clubs')}}</h4>
-        <div class="small-up-1 medium-up-4 large-up-6">
+        <div id="clubs" class="small-up-1 medium-up-4 large-up-6" data-equalizer data-equalize-by-row="true">
             {% for club in clubs %}
-                <div class="column callout">
+                <div class="column callout" data-equalizer-watch>
                     <a href="{{ url_for('clubs', club_slug=club._id)}}">
                         {{club.id}}
                         {% if club.logo %}
@@ -34,8 +34,9 @@
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="medium-6 column">
+<div class="row medium-up-2">
+    {% if news %}
+    <div class="column">
         <h4>{{gettext('This month\'s news')}}</h4>
         {% for news_item in news %}
             <div class="callout">
@@ -48,20 +49,28 @@
             </div>
         {% endfor %}
     </div>
-    <div class="medium-6 column">
-        {% if current_events %}
-            <h4>{{gettext('Current events')}}</h4>
-            {% for event in current_events %}
-                {% include 'event.html' %}
-            {% endfor %}
-        {% endif %}
-        {% if next_events %}
-            <hr />
-            <h4>{{gettext('Upcoming events')}}</h4>
-            {% for event in next_events %}
-                {% include 'event.html' %}
-            {% endfor %}
-        {% endif %}
-    </div>
+    {% endif %}
+    {% if current_events or next_events %}
+        <div class="column">
+            {% if current_events %}
+                <h4>{{gettext('Current events')}}</h4>
+                {% for event in current_events %}
+                    {% include 'event.html' %}
+                {% endfor %}
+            {% endif %}
+            {% if next_events %}
+                <h4>{{gettext('Upcoming events')}}</h4>
+                {% for event in next_events %}
+                    {% include 'event.html' %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    {% endif %}
+
 </div>
+{% endblock %}
+{% block javascript %}
+<script type="text/javascript">
+    new Foundation.Equalizer($('#clubs'));
+</script>
 {% endblock %}
