@@ -19,6 +19,7 @@ from flask_login import current_user, login_required
 import os
 import rollbar
 import rollbar.contrib.flask
+from urllib import quote
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -129,8 +130,6 @@ def login_return():
     sub = jwt.decode(tokens['id_token'], key, audience=app.config['OPENID_CLIENT'])['sub']
     info = requests.get(app.config['OPENID_USERINFO_ENDPOINT'], headers={'Authorization': 'Bearer ' + tokens['access_token']}).json()
 
-    print User.objects.filter(sub=sub).first()
-
     if User.objects.filter(sub=sub).first() is None:
         user = User(sub=sub, email=info['email'])
         user.save()
@@ -192,6 +191,17 @@ def clubs(club_slug):
     return render_template('club.html',
                            club=club, current_event=current_event, next_event=next_event,
                            next_events=next_events, past_events=past_events, news=news)
+
+@app.route('/events/<event_id>')
+def events(event_id):
+    event = Event.objects.with_id(event_id)
+
+    gmaps = None
+    if app.config['GOOGLE_API_KEY'] and hasattr(event.place, 'address'):
+        gmaps = "https://www.google.com/maps/embed/v1/place?" \
+                "q=" + quote(event.place.address.encode('utf-8')) + "&key=" + app.config['GOOGLE_API_KEY']
+
+    return render_template('events.html', event=event, gmaps=gmaps)
 
 @app.route('/enroll/<token>')
 @login_required

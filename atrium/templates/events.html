@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="medium-3 column">
+        {% if event.poster %}
+            <img src="{{event.poster}}" alt="{{event.name}} logo" /><br />
+        {% endif %}
+        <h4>{{event.name}}</h4>
+        <h6>{{gettext('From')}} {{event.start_date.strftime('%d %B %Y %H:%M')}}</h6>
+        <h6>{{gettext('To')}} {{event.end_date.strftime('%d %B %Y %H:%M')}}</h6>
+        <hr />
+        <h6>{{event.place.name}}</h6>
+        {% if gmaps %}
+            <iframe height="350" width="100%" frameborder="0" style="border:0"
+                    src="{{gmaps}}" allowfullscreen></iframe>
+        {% endif %}
+    </div>
+    <div class="medium-9 column">
+        <h3>Description</h3><hr />
+        {{event.description|safe}}
+    </div>
+</div>
+{% endblock %}

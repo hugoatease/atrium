@@ -41,7 +41,6 @@ var EventList = React.createClass({
                         <div className="callout" onClick={this.select.bind(this, event)}>
                             <h5>{event.name}</h5>
                             <h6>{moment(event.start_date).format('LL LT')} - {moment(event.end_date).format('LL LT')}</h6>
-                            <p dangerouslySetInnerHTML={{__html: event.description}}></p>
                         </div>
                     )
                 }.bind(this))}

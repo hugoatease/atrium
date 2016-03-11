@@ -43,6 +43,10 @@ class Event(db.Document):
     poster = db.StringField()
     place = db.EmbeddedDocumentField(Place)
 
+    meta = {
+        'ordering': ['-start_date']
+    }
+
 
 class News(db.Document):
     name = db.StringField(required=True)
