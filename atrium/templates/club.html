@@ -27,33 +27,37 @@
             {% endwith %}
         {% endif %}
 
-        <div class="row">
-            <div class="medium-7 column">
-                {% for news_item in news %}
-                    <div class="callout">
-                        <h5>{{news_item.name}}</h5>
-                        <h6>{{news_item.date.strftime('%d %B %Y %H:%M')}} {{gettext('by')}} {{news_item.author.first_name}} {{news_item.author.last_name}}</h6>
-                        <p>{{news_item.headline}}</p>
-                        <hr />
-                        <p>{{news_item.content|safe}}</p>
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="medium-5 column">
-                {% if next_events %}
-                    <h4>{{gettext('Next events')}}</h4>
-                    {% for event in next_events %}
-                        {% include 'event.html' %}
+        <div class="row medium-up-2">
+            {% if news %}
+                <div class="column">
+                    {% for news_item in news %}
+                        <div class="callout">
+                            <h5>{{news_item.name}}</h5>
+                            <h6>{{news_item.date.strftime('%d %B %Y %H:%M')}} {{gettext('by')}} {{news_item.author.first_name}} {{news_item.author.last_name}}</h6>
+                            <p>{{news_item.headline}}</p>
+                            <hr />
+                            <p>{{news_item.content|safe}}</p>
+                        </div>
                     {% endfor %}
-                {% endif %}
-                <br />
-                {% if past_events %}
-                <h4>{{gettext('Past events')}}</h4>
-                    {% for event in past_events %}
-                        {% include 'event.html' %}
-                    {% endfor %}
-                {% endif %}
-            </div>
+                </div>
+            {% endif %}
+            {% if next_events or past_events %}
+                <div class="column">
+                    {% if next_events %}
+                        <h4>{{gettext('Next events')}}</h4>
+                        {% for event in next_events %}
+                            {% include 'event.html' %}
+                        {% endfor %}
+                    {% endif %}
+                    <br />
+                    {% if past_events %}
+                    <h4>{{gettext('Past events')}}</h4>
+                        {% for event in past_events %}
+                            {% include 'event.html' %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
