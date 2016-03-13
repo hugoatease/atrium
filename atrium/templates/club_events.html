@@ -1,0 +1,28 @@
+{% extends 'club_base.html' %}
+{% block club_content %}
+{% if next_event %}
+    {% with type=gettext('Next Event'), event=next_event %}
+        {% include 'event.html' %}
+    {% endwith %}
+{% endif %}
+{% if next_events %}
+<h4>{{gettext('Next events')}}</h4>
+<div class="row medium-up-2">
+    {% for event in next_events %}
+        <div class="column">
+            {% include 'event.html' %}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% if past_events %}
+<h4>{{gettext('Past events')}}</h4>
+<div class="row medium-up-2">
+    {% for event in past_events %}
+        <div class="column">
+            {% include 'event.html' %}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

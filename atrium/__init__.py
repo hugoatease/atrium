@@ -224,6 +224,25 @@ def events(event_id):
 
     return render_template('events.html', event=event, gmaps=gmaps)
 
+@app.route('/clubs/<club_slug>/events')
+def club_events(club_slug):
+    club = Club.objects.with_id(club_slug)
+    next_event = Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').first()
+
+    current_event = None
+    if next_event is not None and arrow.get(next_event.end_date) > arrow.utcnow() > arrow.get(next_event.start_date):
+        current_event = next_event
+
+    next_events = list(Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').all())
+    if next_event is not None:
+        next_events.remove(next_event)
+
+    past_events = Event.objects(club=club, end_date__lt=str(arrow.utcnow())).order_by('-end_date').all()
+
+    return render_template('club_events.html', club=club, current_event=current_event, next_event=next_event,
+                           next_events=next_events, past_events=past_events)
+
+
 @app.route('/enroll/<token>')
 @login_required
 def enroll(token):
