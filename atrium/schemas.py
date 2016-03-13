@@ -48,6 +48,11 @@ class Event(db.Document):
     }
 
 
+class Media(db.EmbeddedDocument):
+    name = db.StringField()
+    url = db.StringField()
+
+
 class News(db.Document):
     name = db.StringField(required=True)
     club = db.ReferenceField(Club)
@@ -55,3 +60,4 @@ class News(db.Document):
     author = db.ReferenceField(Profile, required=True)
     headline = db.StringField()
     content = db.StringField(required=True)
+    medias = db.EmbeddedDocumentListField(Media)

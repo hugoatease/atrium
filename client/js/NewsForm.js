@@ -4,6 +4,7 @@ var moment = require('moment');
 var ReactQuill = require('react-quill');
 var browserHistory = require('react-router').browserHistory;
 var humane = require('humane-js');
+var NewsMedia = require('./NewsMedia');
 
 var NewsForm = React.createClass({
     getDefaultProps: function() {
@@ -103,10 +104,38 @@ var NewsForm = React.createClass({
         });
     },
 
+    onSelect: function(media) {
+        var html = this.state.content;
+        html += '<div> <img src="' + media.url + '"/></div>';
+        this.setState({
+            content: html
+        });
+    },
+
     render: function() {
         var del = null;
         if (this.props.news_id) {
             del = <button className="button alert" onClick={this.remove}>Delete news</button>;
+        }
+
+        var content = null;
+        if (this.props.news_id) {
+            content = (
+                <div className="row">
+                    <div className="medium-8 column">
+                        <label>
+                            <span>News content</span>
+                            <ReactQuill placeholder="News content" value={this.state.content} theme="snow" onChange={this.onContentChange} />
+                        </label>
+                    </div>
+                    <div className="medium-4 column">
+                        <label>
+                            <span>News media</span>
+                            <NewsMedia news_id={this.props.news_id} callback={this.onSelect} />
+                        </label>
+                    </div>
+                </div>
+            );
         }
 
         return (
@@ -116,13 +145,10 @@ var NewsForm = React.createClass({
                     <input type="text" placeholder="News title" value={this.state.name} onChange={this.onNameChange} />
                 </label>
                 <label>
-                    <span>Healine</span>
+                    <span>Headline</span>
                     <input type="text" placeholder="Headline" value={this.state.headline} onChange={this.onHeadlineChange} />
                 </label>
-                <label>
-                    <span>News content</span>
-                    <ReactQuill placeholder="News content" value={this.state.content} theme="snow" onChange={this.onContentChange} />
-                </label>
+                {content}
                 <button type="submit" className="button success">Save news</button>
                 &nbsp;&nbsp;
                 {del}

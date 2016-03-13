@@ -45,6 +45,11 @@ event_fields = {
     'place': fields.Nested(place_fields)
 }
 
+media_fields = {
+    'name': fields.String,
+    'url': fields.String
+}
+
 news_fields = {
     'id': fields.String,
     'name': fields.String,
@@ -52,7 +57,8 @@ news_fields = {
     'date': fields.String,
     'author': fields.Nested(profile_fields),
     'headline': fields.String,
-    'content': fields.String
+    'content': fields.String,
+    'medias': fields.List(fields.Nested(media_fields))
 }
 
 club_permissions_fields = {

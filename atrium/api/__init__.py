@@ -2,7 +2,7 @@ from flask_restful import Api
 from .profile import ProfileResource, ProfileListResource, ProfilePhoto
 from .club import ClubListResource, ClubResource, ClubMembersResource, ClubLogoResource, ClubPermissionsResource
 from .event import EventListResource, EventResource, EventPoster
-from .news import NewsListResource, NewsResource
+from .news import NewsListResource, NewsResource, NewsMediasResource
 from .users import UsersListResource, UsersResource, UsersPermissionsResource
 from .permissions import PermissionsResource, EnrollResource
 
@@ -24,6 +24,7 @@ api.add_resource(EventPoster, '/api/events/<event_id>/poster')
 
 api.add_resource(NewsListResource, '/api/news')
 api.add_resource(NewsResource, '/api/news/<news_id>')
+api.add_resource(NewsMediasResource, '/api/news/<news_id>/medias')
 
 api.add_resource(UsersListResource, '/api/users')
 api.add_resource(UsersResource, '/api/users/<user_id>')

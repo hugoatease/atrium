@@ -67,7 +67,7 @@ var ProfileEdit = React.createClass({
 
     removePhoto: function(ev) {
         ev.preventDefault();
-        
+
         request.del('/api/profiles/me/photo')
             .end(function(err) {
                 if (err) return;

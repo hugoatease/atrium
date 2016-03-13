@@ -1,11 +1,15 @@
-from flask import request
+from flask import request, current_app
 from flask_restful import Resource, marshal_with, reqparse, abort
 from flask_login import current_user, login_required
-from atrium.schemas import News, Club
+from atrium.schemas import News, Club, Media
 from .fields import news_fields
 import arrow
 import bleach
 from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
+from atrium import s3conn
+from boto.s3.key import Key
+import werkzeug.datastructures
+from uuid import uuid4
 
 
 class NewsListResource(Resource):
@@ -24,7 +28,7 @@ class NewsListResource(Resource):
         parser.add_argument('name', type=unicode, required=True)
         parser.add_argument('club', type=unicode)
         parser.add_argument('headline', type=unicode, required=True)
-        parser.add_argument('content', type=unicode, required=True)
+        parser.add_argument('content', type=unicode)
         args = parser.parse_args()
 
         if not current_user.is_admin() and not current_user.has_any_permission('club', args['club'], ['admin', 'news']):
@@ -85,3 +89,32 @@ class NewsResource(Resource):
 
         news.delete()
         return '', 204
+
+
+class NewsMediasResource(Resource):
+    @marshal_with(news_fields)
+    def post(self, news_id):
+        news = News.objects.with_id(news_id)
+
+        if not current_user.is_admin() and not current_user.has_any_permission('club', news.club.id, ['admin', 'news']):
+            return abort(401)
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('media', type=werkzeug.datastructures.FileStorage, location='files')
+        args = parser.parse_args()
+
+        uid = str(uuid4())
+
+        bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
+        key = Key(bucket)
+        key.key = 'news/' + str(news.id) + '/' + uid
+        key.content_type = args['media'].mimetype
+        key.set_contents_from_file(args['media'].stream)
+        key.make_public()
+
+        news.update(add_to_set__medias=Media(
+            name=uid,
+            url='https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/news/' + str(news.id) + '/' + uid
+        ))
+
+        return News.objects.with_id(news_id)
