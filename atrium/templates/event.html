@@ -13,9 +13,9 @@
                     <h5>{{type}}</h5>
                 {% endif %}
                 <h3>{{event.name}}</h3>
-                <small>{{gettext('By')}} <a href="{{url_for('clubs', club_slug=event.club.id)}}">{{event.club.name}}</a></small>
-                <h6>{{event.start_date.strftime('%d %B %Y %H:%M')}}</h6>
-                <h6>{{event.end_date.strftime('%d %B %Y %H:%M')}}</h6>
+                <small>{{gettext('Organized by')}} <a href="{{url_for('clubs', club_slug=event.club.id)}}">{{event.club.name}}</a></small>
+                <h6>{{gettext('From')}} {{format_datetime(event.start_date)}}</h6>
+                <h6>{{gettext('To')}} {{format_datetime(event.end_date)}}</h6>
             </div>
         </div>
         {% if show_description %}

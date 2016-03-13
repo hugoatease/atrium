@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, request, session, url_for, got_request_exception
-from flask_babel import Babel
+from flask_babel import Babel, format_datetime, format_date, format_time
 import requests
 from urllib import urlencode
 from atrium.schemas import db
@@ -56,6 +56,17 @@ def get_locale():
     if not guess:
         guess = 'en'
     return guess
+
+@app.context_processor
+def date_processors():
+    def datetime_processor(datetime):
+        return format_datetime(datetime, format='medium')
+
+    return dict(
+        format_date=format_date,
+        format_time=format_time,
+        format_datetime=datetime_processor
+    )
 
 @app.route('/')
 def index():
