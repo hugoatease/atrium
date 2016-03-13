@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="small-12 column">
+        <h4>{{gettext('Clubs')}}</h4>
+        <div id="clubs" class="small-up-1 medium-up-4 large-up-6" data-equalizer data-equalize-by-row="true">
+            {% for club in clubs %}
+                <div class="column callout" data-equalizer-watch>
+                    <a href="{{ url_for('clubs', club_slug=club._id)}}">
+                        {{club.id}}
+                        {% if club.logo %}
+                            <img src="{{club.logo}}" alt="{{club.logo}} logo"/>
+                            <br /><br />
+                        {% endif %}
+                        <h5 align="center">{{club.name}}</h5>
+                        {% if club.upcoming %}
+                            <h6>{{club.upcoming}} {{gettext('events upcoming')}}</h6>
+                        {% endif %}
+                        {% if club.news_published %}
+                            <h6>{{club.news_published}} {{gettext('news this month')}}</h6>
+                        {% endif %}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

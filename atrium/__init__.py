@@ -68,8 +68,8 @@ def date_processors():
         format_datetime=datetime_processor
     )
 
-@app.route('/')
-def index():
+
+def get_clubs_with_stats():
     clubs = list(Club.objects.aggregate(
         {'$lookup': {'from': 'event', 'localField': '_id', 'foreignField': 'club', 'as': 'events'}},
         {'$lookup': {'from': 'news', 'localField': '_id', 'foreignField': 'club', 'as': 'news'}}
@@ -98,6 +98,11 @@ def index():
 
     clubs = map(club_stats, clubs)
     clubs = sorted(clubs, key=lambda club: club['weight'], reverse=True)
+    return clubs
+
+@app.route('/')
+def index():
+    clubs = get_clubs_with_stats()[0:6]
 
     news = News.objects(date__gte=str(arrow.utcnow().replace(months=-1))).all()
 
@@ -181,6 +186,11 @@ def editor():
 @login_required
 def editor_all(path):
     return render_template('editor.html')
+
+@app.route('/clubs')
+def clubs_list():
+    clubs = get_clubs_with_stats()
+    return render_template('clubs.html', clubs=clubs)
 
 @app.route('/clubs/<club_slug>')
 def clubs(club_slug):

@@ -12,6 +12,7 @@
 <div class="row">
     <div class="small-12 column">
         <h4>{{gettext('Clubs')}}</h4>
+        <a class="button primary" href="{{url_for('clubs_list')}}">{{gettext('See all clubs')}}</a>
         <div id="clubs" class="small-up-1 medium-up-4 large-up-6" data-equalizer data-equalize-by-row="true">
             {% for club in clubs %}
                 <div class="column callout" data-equalizer-watch>
