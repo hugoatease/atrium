@@ -83,7 +83,7 @@ def get_clubs_with_stats():
                 upcoming += 1
 
         for news in club['news']:
-            if news['date'] > arrow.utcnow().replace(months=-1):
+            if news['date'] > arrow.utcnow().replace(months=-1) and not news['draft']:
                 news_published += 1
 
         if upcoming > 0:
@@ -104,7 +104,7 @@ def get_clubs_with_stats():
 def index():
     clubs = get_clubs_with_stats()[0:6]
 
-    news = News.objects(date__gte=str(arrow.utcnow().replace(months=-1))).all()
+    news = News.objects(draft=False, date__gte=str(arrow.utcnow().replace(months=-1))).all()
 
     current_events = Event.objects(end_date__gt=str(arrow.utcnow()), start_date__lte=str(arrow.utcnow())).order_by('end_date').all()
     next_events = Event.objects(start_date__gte=str(arrow.utcnow())).order_by('end_date').all()
@@ -207,7 +207,7 @@ def clubs(club_slug):
 
     past_events = Event.objects(club=club, end_date__lt=str(arrow.utcnow())).order_by('-end_date').all()
 
-    news = News.objects(club=club).order_by('-end_date').all()
+    news = News.objects(club=club, draft=False).order_by('-end_date').all()
 
     return render_template('club.html',
                            club=club, current_event=current_event, next_event=next_event,

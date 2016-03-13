@@ -37,10 +37,15 @@ var NewsList = React.createClass({
         return (
             <div>
                 {this.state.news.map(function(news) {
+                    var status = <span className="success label">Published</span>;
+                    if (news.draft) {
+                        status = <span className="alert label">Draft</span>;
+                    }
                     return (
                         <div className="callout" onClick={this.select.bind(this, news)}>
                             <h5>{news.name}</h5>
-                            <h6>Published on {moment(news.date).format('LL LT')} by {news.author.first_name} {news.author.last_name}</h6>
+                            {status}
+                            <h6>On {moment(news.date).format('LL LT')} by {news.author.first_name} {news.author.last_name}</h6>
                             <p>{news.headline}</p>
                         </div>
                     );

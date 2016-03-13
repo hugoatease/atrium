@@ -55,9 +55,10 @@ class Media(db.EmbeddedDocument):
 
 class News(db.Document):
     name = db.StringField(required=True)
-    club = db.ReferenceField(Club)
+    club = db.ReferenceField(Club, required=True)
     date = db.DateTimeField(required=True)
     author = db.ReferenceField(Profile, required=True)
     headline = db.StringField()
     content = db.StringField(required=True)
+    draft = db.BooleanField(default=False)
     medias = db.EmbeddedDocumentListField(Media)

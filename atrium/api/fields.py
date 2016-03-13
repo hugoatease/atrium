@@ -55,6 +55,7 @@ news_fields = {
     'name': fields.String,
     'club': fields.Nested(club_fields),
     'date': fields.String,
+    'draft': fields.Boolean,
     'author': fields.Nested(profile_fields),
     'headline': fields.String,
     'content': fields.String,

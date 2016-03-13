@@ -42,7 +42,7 @@
         {% for news_item in news %}
             <div class="callout">
                 <h5>{{news_item.name}}</h5>
-                <h6>{{news_item.date.strftime('%d %B %Y %H:%M')}} {{gettext('by')}} {{news_item.author.first_name}} {{news_item.author.last_name}} 7
+                <h6>{{news_item.date.strftime('%d %B %Y %H:%M')}} {{gettext('by')}} {{news_item.author.first_name}} {{news_item.author.last_name}}
                     {{gettext('at')}} <a href="{{url_for('clubs', club_slug=news_item.club.id)}}">{{news_item.club.name}}</a></h6>
                 <p>{{news_item.headline}}</p>
                 <hr />

@@ -18,7 +18,8 @@ var NewsForm = React.createClass({
             name: null,
             headline: null,
             content: 'Enter content here',
-            club: null
+            club: null,
+            draft: false
         }
     },
 
@@ -112,6 +113,17 @@ var NewsForm = React.createClass({
         });
     },
 
+    toggleDraft: function(ev) {
+        ev.preventDefault();
+
+        request.put('/api/news/' + this.props.news_id)
+            .send({draft: !this.state.draft})
+            .end(function(err, res) {
+                if (err) return;
+                this.setState(res.body);
+            }.bind(this));
+    },
+
     render: function() {
         var del = null;
         if (this.props.news_id) {
@@ -138,6 +150,28 @@ var NewsForm = React.createClass({
             );
         }
 
+        var status = null;
+        if (this.props.news_id) {
+            if (this.state.draft) {
+                status = (
+                    <div>
+                        <h6>Status: Draft</h6>
+                        <button className="button success small" onClick={this.toggleDraft}>Publish</button>
+                        <br />
+                    </div>
+                );
+            }
+            else {
+                status = (
+                    <div>
+                        <h6>Status: Published</h6>
+                        <button className="button alert small" onClick={this.toggleDraft}>Unpublish</button>
+                        <br />
+                    </div>
+                );
+            }
+        }
+
         return (
             <form onSubmit={this.save}>
                 <label>
@@ -152,6 +186,7 @@ var NewsForm = React.createClass({
                 <button type="submit" className="button success">Save news</button>
                 &nbsp;&nbsp;
                 {del}
+                {status}
             </form>
         );
     }

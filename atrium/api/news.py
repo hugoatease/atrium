@@ -18,6 +18,11 @@ class NewsListResource(Resource):
         query = News.objects
         if 'club' in request.args:
             query = query.filter(club=Club.objects.with_id(request.args['club']))
+        if 'draft' in request.args:
+            if request.args['draft'] == 'true':
+                query = query.filter(draft=True)
+            if request.args['draft'] == 'false':
+                query = query.filter(draft=False)
 
         return list(query.all())
 
@@ -26,8 +31,8 @@ class NewsListResource(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=unicode, required=True)
-        parser.add_argument('club', type=unicode)
-        parser.add_argument('headline', type=unicode, required=True)
+        parser.add_argument('club', type=unicode, required=True)
+        parser.add_argument('headline', type=unicode)
         parser.add_argument('content', type=unicode)
         args = parser.parse_args()
 
@@ -40,7 +45,8 @@ class NewsListResource(Resource):
             date=arrow.utcnow().datetime,
             author=current_user.get_profile(),
             headline=args['headline'],
-            content=bleach.clean(args['content'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
+            content=bleach.clean(args['content'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES),
+            draft=True
         )
 
         news.save()
@@ -66,9 +72,10 @@ class NewsResource(Resource):
         parser.add_argument('author', type=unicode, store_missing=False)
         parser.add_argument('headline', type=unicode, store_missing=False)
         parser.add_argument('content', type=unicode, store_missing=False)
+        parser.add_argument('draft', type=bool, store_missing=False)
         args = parser.parse_args()
 
-        for field in ['name', 'club', 'author', 'headline']:
+        for field in ['name', 'club', 'author', 'headline', 'draft']:
             if field in args.keys():
                 setattr(news, field, args[field])
 
