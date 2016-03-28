@@ -1,12 +1,13 @@
 from flask_restful import Resource, marshal_with, reqparse, current_app, abort
 from flask_login import login_required, current_user
 from .fields import club_fields, club_permissions_fields
-from atrium.schemas import Club, Profile, User
+from atrium.schemas import Club, Profile, User, Event
 import werkzeug.datastructures
 from atrium import s3conn
 from boto.s3.key import Key
 import bleach
 from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
+import requests
 
 
 class ClubListResource(Resource):
@@ -161,3 +162,37 @@ class ClubPermissionsResource(Resource):
 
         parsed_permissions = map(permissions_parse, permissions)
         return parsed_permissions
+
+
+class ClubFacebookEventsResource(Resource):
+    def get(self, club_slug):
+        club = Club.objects.with_id(club_slug)
+        if club.facebook_page is None:
+            return abort(404)
+
+        events = []
+        end = False
+        next = None
+        while not end:
+            params = {
+                'access_token': current_app.config['FACEBOOK_APPID'] + '|' + current_app.config['FACEBOOK_SECRET'],
+                'fields': 'id,name,start_time,end_time',
+            }
+            if next is not None:
+                params['after'] = next
+            response = requests.get('https://graph.facebook.com/' + club.facebook_page + '/events', params=params).json()
+            if len(response['data']) == 0:
+                end = True
+            else:
+                events += response['data']
+                next = response['paging']['cursors']['after']
+
+        def filter_events(item):
+            event = Event.objects(facebook_id=item['id']).first()
+            if event is None:
+                return True
+            return False
+
+        events = filter(filter_events, events)
+
+        return events

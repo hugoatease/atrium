@@ -29,6 +29,7 @@ class EventListResource(Resource):
         parser.add_argument('description', type=unicode, required=True)
         parser.add_argument('start_date', type=unicode, required=True)
         parser.add_argument('end_date', type=unicode, required=True)
+        parser.add_argument('facebook_id', type=unicode, required=False)
         parser.add_argument('place', type=dict, store_missing=False)
         args = parser.parse_args()
 
@@ -41,6 +42,7 @@ class EventListResource(Resource):
             description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES),
             start_date=arrow.get(args['start_date']).datetime,
             end_date=arrow.get(args['end_date']).datetime,
+            facebook_id=args['facebook_id']
         )
 
         if 'place' in args.keys():
@@ -72,9 +74,10 @@ class EventResource(Resource):
         parser.add_argument('start_date', type=unicode, store_missing=False)
         parser.add_argument('end_date', type=unicode, store_missing=False)
         parser.add_argument('place', type=dict, store_missing=False)
+        parser.add_argument('facebook_id', type=unicode, store_missing=False)
         args = parser.parse_args()
 
-        for field in ['name', 'club']:
+        for field in ['name', 'club', 'facebook_id']:
             if field in args.keys():
                 setattr(event, field, args[field])
 

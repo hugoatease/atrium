@@ -42,6 +42,7 @@ class Event(db.Document):
     start_date = db.DateTimeField(required=True)
     end_date = db.DateTimeField(required=True)
     poster = db.StringField()
+    facebook_id = db.StringField()
     place = db.EmbeddedDocumentField(Place)
 
     meta = {

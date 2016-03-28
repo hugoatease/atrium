@@ -39,6 +39,7 @@ event_fields = {
     'id': fields.String,
     'name': fields.String,
     'club': fields.Nested(club_fields),
+    'facebook_id': fields.String,
     'description': fields.String,
     'start_date': fields.String,
     'end_date': fields.String,

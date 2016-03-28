@@ -20,6 +20,7 @@ var EventCreate = React.createClass({
         return {
             name: null,
             description: 'Enter description here',
+            facebook_id: null,
             start_date: null,
             end_date: null,
             place: {
@@ -39,6 +40,7 @@ var EventCreate = React.createClass({
                         description: res.body.description,
                         start_date: moment(res.body.start_date),
                         end_date: moment(res.body.end_date),
+                        facebook_id: res.body.facebook_id,
                         place: {
                             name: res.body.place.name,
                             address: res.body.place.address
@@ -99,6 +101,10 @@ var EventCreate = React.createClass({
         this.setState({place: place});
     },
 
+    changedFacebookID: function(ev) {
+        this.setState({facebook_id: ev.target.value});
+    },
+
     save: function(ev) {
         ev.preventDefault();
         if (!this.state.start_date || !this.state.end_date) {
@@ -112,6 +118,7 @@ var EventCreate = React.createClass({
             description: this.state.description,
             start_date: this.state.start_date.toISOString(),
             end_date: this.state.end_date.toISOString(),
+            facebook_id: this.state.facebook_id,
             place: {
                 name: this.state.place.name,
                 address: this.state.place.address
@@ -175,6 +182,10 @@ var EventCreate = React.createClass({
                 <label>
                     <span>Event name</span>
                     <input type="text" placeholder="Event name" value={this.state.name} onChange={this.changedName} />
+                </label>
+                <label>
+                    <span>Facebook ID</span>
+                    <input type="text" placeholder="Facebook ID" value={this.state.facebook_id} onChange={this.changedFacebookID} />
                 </label>
                 <label>
                     <span>Event description</span>
