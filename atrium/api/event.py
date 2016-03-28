@@ -1,7 +1,7 @@
-from flask import request, current_app
+from flask import request, current_app, g
 from flask_login import login_required, current_user
 from flask_restful import Resource, marshal_with, reqparse, abort
-from atrium.schemas import Event, Place, Club
+from atrium.schemas import Place
 from .fields import event_fields
 import arrow
 import werkzeug.datastructures
@@ -15,9 +15,9 @@ import requests
 class EventListResource(Resource):
     @marshal_with(event_fields)
     def get(self):
-        query = Event.objects
+        query = g.Event.objects
         if 'club' in request.args:
-            query = query.filter(club=Club.objects.with_id(request.args['club']))
+            query = query.filter(club=g.Club.objects.with_id(request.args['club']))
 
         return list(query.all())
 
@@ -38,7 +38,7 @@ class EventListResource(Resource):
             return abort(401)
 
         def event_from_args(args):
-            event = Event(
+            event = g.Event(
                 name=args['name'],
                 club=args['club'],
                 description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES),
@@ -57,7 +57,7 @@ class EventListResource(Resource):
             return event
 
         def event_from_facebook(args, data):
-            event = Event(
+            event = g.Event(
                 club=args['club'],
                 facebook_id=data['id'],
                 name=data['name'],
@@ -108,12 +108,12 @@ class EventListResource(Resource):
 class EventResource(Resource):
     @marshal_with(event_fields)
     def get(self, event_id):
-        return Event.objects.with_id(event_id)
+        return g.Event.objects.with_id(event_id)
 
     @login_required
     @marshal_with(event_fields)
     def put(self, event_id):
-        event = Event.objects.with_id(event_id)
+        event = g.Event.objects.with_id(event_id)
 
         if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
             return abort(401)
@@ -146,7 +146,7 @@ class EventResource(Resource):
 
     @login_required
     def delete(self, event_id):
-        event = Event.objects.with_id(event_id)
+        event = g.Event.objects.with_id(event_id)
         if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
             return abort(401)
 
@@ -158,7 +158,7 @@ class EventPoster(Resource):
     @login_required
     @marshal_with(event_fields)
     def post(self, event_id):
-        event = Event.objects.with_id(event_id)
+        event = g.Event.objects.with_id(event_id)
 
         if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
             return abort(401)
@@ -181,7 +181,7 @@ class EventPoster(Resource):
 
     @login_required
     def delete(self, event_id):
-        event = Event.objects.with_id(event_id)
+        event = g.Event.objects.with_id(event_id)
 
         if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
             return abort(401)

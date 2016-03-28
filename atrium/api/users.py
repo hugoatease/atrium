@@ -1,7 +1,7 @@
+from flask import g
 from flask_restful import Resource, marshal_with, reqparse, abort
 from flask_login import login_required, current_user
 from .fields import user_fields
-from atrium.schemas import User
 from atrium.auth import parse_permission
 
 
@@ -9,14 +9,14 @@ class UsersListResource(Resource):
     @login_required
     @marshal_with(user_fields)
     def get(self):
-        return list(User.objects.all())
+        return list(g.User.objects.all())
 
 
 class UsersResource(Resource):
     @login_required
     @marshal_with(user_fields)
     def get(self, user_id):
-        return User.objects.with_id(user_id)
+        return g.User.objects.with_id(user_id)
 
 
 class UsersPermissionsResource(Resource):
@@ -31,7 +31,7 @@ class UsersPermissionsResource(Resource):
             return abort(401)
 
         if current_user.is_admin():
-            User.objects.with_id(user_id).update(add_to_set__permissions=args['permission'])
+            g.User.objects.with_id(user_id).update(add_to_set__permissions=args['permission'])
         else:
             permission = parse_permission(args['permission'])
             if permission['realm'] != 'club':
@@ -39,9 +39,9 @@ class UsersPermissionsResource(Resource):
             club = permission['resource']
             if not current_user.has_any_permission('club', club, ['admin']):
                 return abort(401)
-            User.objects.with_id(user_id).update(add_to_set__permissions=args['permission'])
+            g.User.objects.with_id(user_id).update(add_to_set__permissions=args['permission'])
 
-        return User.objects.with_id(user_id)
+        return g.User.objects.with_id(user_id)
 
     @login_required
     @marshal_with(user_fields)
@@ -54,7 +54,7 @@ class UsersPermissionsResource(Resource):
             return abort(401)
 
         if current_user.is_admin():
-            User.objects.with_id(user_id).update(pull__permissions=args['permission'])
+            g.User.objects.with_id(user_id).update(pull__permissions=args['permission'])
         else:
             permission = parse_permission(args['permission'])
             if permission['realm'] != 'club':
@@ -62,6 +62,6 @@ class UsersPermissionsResource(Resource):
             club = permission['resource']
             if not current_user.has_any_permission('club', club, ['admin']):
                 return abort(401)
-            User.objects.with_id(user_id).update(pull__permissions=args['permission'])
+            g.User.objects.with_id(user_id).update(pull__permissions=args['permission'])
 
-        return User.objects.with_id(user_id)
+        return g.User.objects.with_id(user_id)

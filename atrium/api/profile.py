@@ -1,11 +1,10 @@
+from flask import current_app, g
 from flask_login import current_user, login_required
 from flask_restful import Resource, abort
-from atrium.schemas import Profile
 from flask_restful import reqparse, marshal_with
 from .fields import profile_fields
 import arrow
 from atrium import s3conn
-from flask import current_app
 from boto.s3.key import Key
 import werkzeug.datastructures
 import bleach
@@ -16,16 +15,16 @@ from hashlib import md5
 class ProfileListResource(Resource):
     @marshal_with(profile_fields)
     def get(self):
-        return list(Profile.objects.all())
+        return list(g.Profile.objects.all())
 
 
 class ProfileResource(Resource):
     @marshal_with(profile_fields)
     def get(self, profile_id):
         if profile_id == 'me':
-            return Profile.objects.filter(user=current_user.get_user()).first()
+            return g.Profile.objects.filter(user=current_user.get_user()).first()
         else:
-            return Profile.objects.with_id(profile_id)
+            return g.Profile.objects.with_id(profile_id)
 
     @login_required
     @marshal_with(profile_fields)
@@ -34,9 +33,9 @@ class ProfileResource(Resource):
             return abort(401)
 
         if profile_id == 'me':
-            profile = Profile.objects.filter(user=current_user.get_user()).first()
+            profile = g.Profile.objects.filter(user=current_user.get_user()).first()
         else:
-            profile = Profile.objects.with_id(profile_id)
+            profile = g.Profile.objects.with_id(profile_id)
 
         parser = reqparse.RequestParser()
         parser.add_argument('facebook_id', type=unicode, store_missing=False)
@@ -67,9 +66,9 @@ class ProfilePhoto(Resource):
             return abort(401)
 
         if profile_id == 'me':
-            profile = Profile.objects.filter(user=current_user.get_user()).first()
+            profile = g.Profile.objects.filter(user=current_user.get_user()).first()
         else:
-            profile = Profile.objects.with_id(profile_id)
+            profile = g.Profile.objects.with_id(profile_id)
 
         parser = reqparse.RequestParser()
         parser.add_argument('photo', type=werkzeug.datastructures.FileStorage, location='files')
@@ -93,9 +92,9 @@ class ProfilePhoto(Resource):
             return abort(401)
 
         if profile_id == 'me':
-            profile = Profile.objects.filter(user=current_user.get_user()).first()
+            profile = g.Profile.objects.filter(user=current_user.get_user()).first()
         else:
-            profile = Profile.objects.with_id(profile_id)
+            profile = g.Profile.objects.with_id(profile_id)
 
         photo_url = profile.photo
 

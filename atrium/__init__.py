@@ -1,9 +1,8 @@
-from flask import Flask, render_template, redirect, request, session, url_for, got_request_exception
+from flask import Flask, render_template, redirect, request, session, url_for, got_request_exception, abort, g
 from flask_babel import Babel, format_datetime, format_date, format_time
 import requests
 from urllib import urlencode
-from atrium.schemas import db
-from atrium.schemas import Club, Event, News
+from atrium.schemas import db, schemas
 import settings
 from .auth import login_manager
 import jwt
@@ -11,7 +10,6 @@ import cryptography.hazmat.primitives.serialization
 from cryptography.hazmat.backends import default_backend
 from flask_login import login_user, logout_user
 from .auth import UserHandler
-from .schemas import User, Profile
 from boto.s3.connection import S3Connection
 from hashlib import md5
 import arrow
@@ -20,6 +18,9 @@ import os
 import rollbar
 import rollbar.contrib.flask
 from urllib import quote
+import etcd
+import mongoengine
+
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -30,6 +31,7 @@ app.config['MONGODB_SETTINGS'] = {
     'tz_aware': True
 }
 
+etcd_client = etcd.Client(port=2379)
 
 login_manager.init_app(app)
 
@@ -48,6 +50,32 @@ if 'ROLLBAR_TOKEN' in app.config:
 def rollbar_handler():
     if 'ROLLBAR_TOKEN' in app.config:
         got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
+
+@app.before_request
+def tenant_handler():
+    host = request.headers.get('Host')
+    try:
+        tenant = etcd_client.read('/atrium/hosts/' + host + '/tenant_id').value
+    except etcd.EtcdKeyNotFound:
+        return abort(404)
+
+    g.tenant = tenant
+    g.openid = {
+        'authorization_endpoint': etcd_client.read('/atrium/tenants/' + tenant + '/openid_authorization').value,
+        'token_endpoint': etcd_client.read('/atrium/tenants/' + tenant + '/openid_token').value,
+        'userinfo_endpoint': etcd_client.read('/atrium/tenants/' + tenant + '/openid_userinfo').value,
+        'client_id': etcd_client.read('/atrium/tenants/' + tenant + '/openid_client').value,
+        'client_secret': etcd_client.read('/atrium/tenants/' + tenant + '/openid_secret').value,
+        'redirect_uri': etcd_client.read('/atrium/tenants/' + tenant + '/openid_redirect').value,
+        'issuer_key': str(etcd_client.read('/atrium/tenants/' + tenant + '/openid_issuer_key').value),
+        'issuer_claim': etcd_client.read('/atrium/tenants/' + tenant + '/openid_issuer_claim').value
+    }
+
+    mongoengine.register_connection(tenant, name=tenant, host=app.config['MONGODB_HOST'], port=app.config['MONGODB_PORT'], connect=False, tz_aware=True)
+    for schema in schemas:
+        setattr(g, schema.__name__, schema)
+        getattr(g, schema.__name__)._meta['db_alias'] = tenant
+        getattr(g, schema.__name__)._collection = None
 
 babel = Babel(app)
 @babel.localeselector
@@ -70,7 +98,7 @@ def date_processors():
 
 
 def get_clubs_with_stats():
-    clubs = list(Club.objects.aggregate(
+    clubs = list(g.Club.objects.aggregate(
         {'$lookup': {'from': 'event', 'localField': '_id', 'foreignField': 'club', 'as': 'events'}},
         {'$lookup': {'from': 'news', 'localField': '_id', 'foreignField': 'club', 'as': 'news'}}
     ))
@@ -104,10 +132,10 @@ def get_clubs_with_stats():
 def index():
     clubs = get_clubs_with_stats()[0:6]
 
-    news = News.objects(draft=False, date__gte=str(arrow.utcnow().replace(months=-1))).all()
+    news = g.News.objects(draft=False, date__gte=str(arrow.utcnow().replace(months=-1))).all()
 
-    current_events = Event.objects(end_date__gt=str(arrow.utcnow()), start_date__lte=str(arrow.utcnow())).order_by('end_date').all()
-    next_events = Event.objects(start_date__gte=str(arrow.utcnow())).order_by('end_date').all()
+    current_events = g.Event.objects(end_date__gt=str(arrow.utcnow()), start_date__lte=str(arrow.utcnow())).order_by('end_date').all()
+    next_events = g.Event.objects(start_date__gte=str(arrow.utcnow())).order_by('end_date').all()
 
     return render_template('index.html', clubs=clubs, news=news,
                            current_events=current_events, next_events=next_events)
@@ -117,8 +145,8 @@ def login():
     params = {
         'scope': 'openid profile email',
         'response_type': 'code',
-        'client_id': app.config['OPENID_CLIENT'],
-        'redirect_uri': app.config['OPENID_REDIRECT']
+        'client_id': g.openid['client_id'],
+        'redirect_uri': g.openid['redirect_uri']
     }
 
     if 'signup_redirect' in request.args:
@@ -129,27 +157,27 @@ def login():
     if 'next' in request.args:
         session['login_next'] = request.args['next']
 
-    return redirect(app.config['OPENID_AUTHORIZE_ENDPOINT'] + '?' + params)
+    return redirect(g.openid['authorization_endpoint'] + '?' + params)
 
 @app.route('/login/return')
 def login_return():
     code = request.args['code']
-    clientAuth = requests.auth.HTTPBasicAuth(app.config['OPENID_CLIENT'], app.config['OPENID_SECRET'])
-    tokens = requests.post(app.config['OPENID_TOKEN_ENDPOINT'], auth=clientAuth, data={
+    clientAuth = requests.auth.HTTPBasicAuth(g.openid['client_id'], g.openid['client_secret'])
+    tokens = requests.post(g.openid['token_endpoint'], auth=clientAuth, data={
         'grant_type': 'authorization_code',
-        'redirect_uri': app.config['OPENID_REDIRECT'],
+        'redirect_uri': g.openid['redirect_uri'],
         'code': code
     }).json()
 
-    key = cryptography.hazmat.primitives.serialization.load_pem_public_key(app.config['OPENID_ISSUER_KEY'], backend=default_backend())
+    key = cryptography.hazmat.primitives.serialization.load_pem_public_key(g.openid['issuer_key'], backend=default_backend())
 
-    sub = jwt.decode(tokens['id_token'], key, audience=app.config['OPENID_CLIENT'])['sub']
-    info = requests.get(app.config['OPENID_USERINFO_ENDPOINT'], headers={'Authorization': 'Bearer ' + tokens['access_token']}).json()
+    sub = jwt.decode(tokens['id_token'], key, audience=g.openid['client_id'])['sub']
+    info = requests.get(g.openid['userinfo_endpoint'], headers={'Authorization': 'Bearer ' + tokens['access_token']}).json()
 
-    if User.objects.filter(sub=sub).first() is None:
-        user = User(sub=sub, email=info['email'])
+    if g.User.objects.filter(sub=sub).first() is None:
+        user = g.User(sub=sub, email=info['email'])
         user.save()
-        profile = Profile(
+        profile = g.Profile(
             user=user,
             first_name=info['given_name'],
             last_name=info['family_name'],
@@ -157,10 +185,10 @@ def login_return():
         )
         profile.save()
     else:
-        user = User.objects.filter(sub=sub).first()
+        user = g.User.objects.filter(sub=sub).first()
         user.email = info['email']
         user.save()
-        profile = Profile.objects.filter(user=user).first()
+        profile = g.Profile.objects.filter(user=user).first()
         profile.first_name = info['given_name']
         profile.last_name = info['family_name']
         profile.save()
@@ -194,20 +222,20 @@ def clubs_list():
 
 @app.route('/clubs/<club_slug>')
 def clubs(club_slug):
-    club = Club.objects.with_id(club_slug)
-    next_event = Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').first()
+    club = g.Club.objects.with_id(club_slug)
+    next_event = g.Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').first()
 
     current_event = None
     if next_event is not None and arrow.get(next_event.end_date) > arrow.utcnow() > arrow.get(next_event.start_date):
         current_event = next_event
 
-    next_events = list(Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').all())
+    next_events = list(g.Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').all())
     if next_event is not None:
         next_events.remove(next_event)
 
-    past_events = Event.objects(club=club, end_date__lt=str(arrow.utcnow())).order_by('-end_date').all()
+    past_events = g.Event.objects(club=club, end_date__lt=str(arrow.utcnow())).order_by('-end_date').all()
 
-    news = News.objects(club=club, draft=False).order_by('-end_date').all()
+    news = g.News.objects(club=club, draft=False).order_by('-end_date').all()
 
     return render_template('club.html',
                            club=club, current_event=current_event, next_event=next_event,
@@ -215,7 +243,7 @@ def clubs(club_slug):
 
 @app.route('/events/<event_id>')
 def events(event_id):
-    event = Event.objects.with_id(event_id)
+    event = g.Event.objects.with_id(event_id)
 
     gmaps = None
     if app.config['GOOGLE_API_KEY'] and event.place is not None and event.place.address is not None:
@@ -226,18 +254,18 @@ def events(event_id):
 
 @app.route('/clubs/<club_slug>/events')
 def club_events(club_slug):
-    club = Club.objects.with_id(club_slug)
-    next_event = Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').first()
+    club = g.Club.objects.with_id(club_slug)
+    next_event = g.Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').first()
 
     current_event = None
     if next_event is not None and arrow.get(next_event.end_date) > arrow.utcnow() > arrow.get(next_event.start_date):
         current_event = next_event
 
-    next_events = list(Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').all())
+    next_events = list(g.Event.objects(club=club, end_date__gte=str(arrow.utcnow())).order_by('end_date').all())
     if next_event is not None:
         next_events.remove(next_event)
 
-    past_events = Event.objects(club=club, end_date__lt=str(arrow.utcnow())).order_by('-end_date').all()
+    past_events = g.Event.objects(club=club, end_date__lt=str(arrow.utcnow())).order_by('-end_date').all()
 
     return render_template('club_events.html', club=club, current_event=current_event, next_event=next_event,
                            next_events=next_events, past_events=past_events)

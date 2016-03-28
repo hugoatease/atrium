@@ -1,7 +1,7 @@
+from flask import g
 from flask_restful import Resource, marshal_with, reqparse, current_app, abort
 from flask_login import login_required, current_user
 from .fields import club_fields, club_permissions_fields
-from atrium.schemas import Club, Profile, User, Event
 import werkzeug.datastructures
 from atrium import s3conn
 from boto.s3.key import Key
@@ -13,7 +13,7 @@ import requests
 class ClubListResource(Resource):
     @marshal_with(club_fields)
     def get(self):
-        return list(Club.objects.all())
+        return list(g.Club.objects.all())
 
     @login_required
     @marshal_with(club_fields)
@@ -28,7 +28,7 @@ class ClubListResource(Resource):
         parser.add_argument('facebook_page', type=unicode)
         args = parser.parse_args()
 
-        club = Club(
+        club = g.Club(
             slug=args['slug'],
             name=args['name'],
             description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES),
@@ -42,7 +42,7 @@ class ClubListResource(Resource):
 class ClubResource(Resource):
     @marshal_with(club_fields)
     def get(self, club_slug):
-        return Club.objects.with_id(club_slug)
+        return g.Club.objects.with_id(club_slug)
 
     @login_required
     @marshal_with(club_fields)
@@ -50,7 +50,7 @@ class ClubResource(Resource):
         if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
             return abort(401)
 
-        club = Club.objects.with_id(club_slug)
+        club = g.Club.objects.with_id(club_slug)
 
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=unicode, store_missing=False)
@@ -75,13 +75,13 @@ class ClubMembersResource(Resource):
         if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
             return abort(401)
 
-        club = Club.objects.with_id(club_slug)
+        club = g.Club.objects.with_id(club_slug)
 
         parser = reqparse.RequestParser()
         parser.add_argument('profile_id', type=unicode)
         args = parser.parse_args()
 
-        club.update(add_to_set__members=Profile.objects.with_id(args['profile_id']))
+        club.update(add_to_set__members=g.Profile.objects.with_id(args['profile_id']))
 
         return 'OK', 200
 
@@ -90,13 +90,13 @@ class ClubMembersResource(Resource):
         if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
             return abort(401)
 
-        club = Club.objects.with_id(club_slug)
+        club = g.Club.objects.with_id(club_slug)
 
         parser = reqparse.RequestParser()
         parser.add_argument('profile_id', type=unicode)
         args = parser.parse_args()
 
-        club.update(pull__members=Profile.objects.with_id(args['profile_id']))
+        club.update(pull__members=g.Profile.objects.with_id(args['profile_id']))
 
         return 'DELETED', 204
 
@@ -108,7 +108,7 @@ class ClubLogoResource(Resource):
         if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
             return abort(401)
 
-        club = Club.objects.with_id(club_slug)
+        club = g.Club.objects.with_id(club_slug)
 
         parser = reqparse.RequestParser()
         parser.add_argument('logo', type=werkzeug.datastructures.FileStorage, location='files')
@@ -131,7 +131,7 @@ class ClubLogoResource(Resource):
         if not current_user.is_admin() and not current_user.has_any_permission('club', club_slug, ['admin', 'edit']):
             return abort(401)
 
-        club = Club.objects.with_id(club_slug)
+        club = g.Club.objects.with_id(club_slug)
         club.logo = None
         club.save()
 
@@ -146,7 +146,7 @@ class ClubPermissionsResource(Resource):
     @login_required
     @marshal_with(club_permissions_fields)
     def get(self, club_slug):
-        permissions = list(User.objects.aggregate(
+        permissions = list(g.User.objects.aggregate(
             {'$match': {'permissions': {'$exists': True}}},
             {'$unwind': '$permissions'},
             {'$match': {'permissions': {'$regex': 'club:' + club_slug + '::'}}},
@@ -155,7 +155,7 @@ class ClubPermissionsResource(Resource):
 
         def permissions_parse(permission):
             def fetch_profiles(user):
-                return Profile.objects(user=user).first()
+                return g.Profile.objects(user=user).first()
             profiles = map(fetch_profiles, permission['users'])
             permission['profiles'] = profiles
             return permission
@@ -166,7 +166,7 @@ class ClubPermissionsResource(Resource):
 
 class ClubFacebookEventsResource(Resource):
     def get(self, club_slug):
-        club = Club.objects.with_id(club_slug)
+        club = g.Club.objects.with_id(club_slug)
         if club.facebook_page is None:
             return abort(404)
 
@@ -188,7 +188,7 @@ class ClubFacebookEventsResource(Resource):
                 next = response['paging']['cursors']['after']
 
         def filter_events(item):
-            event = Event.objects(facebook_id=item['id']).first()
+            event = g.Event.objects(facebook_id=item['id']).first()
             if event is None:
                 return True
             return False

@@ -64,3 +64,5 @@ class News(db.Document):
     content = db.StringField(required=True)
     draft = db.BooleanField(default=False)
     medias = db.EmbeddedDocumentListField(Media)
+
+schemas = [User, Profile, Club, Event, News]

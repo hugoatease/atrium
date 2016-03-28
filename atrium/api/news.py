@@ -1,7 +1,7 @@
-from flask import request, current_app
+from flask import request, current_app, g
 from flask_restful import Resource, marshal_with, reqparse, abort
 from flask_login import current_user, login_required
-from atrium.schemas import News, Club, Media
+from atrium.schemas import Media
 from .fields import news_fields
 import arrow
 import bleach
@@ -15,9 +15,9 @@ from uuid import uuid4
 class NewsListResource(Resource):
     @marshal_with(news_fields)
     def get(self):
-        query = News.objects
+        query = g.News.objects
         if 'club' in request.args:
-            query = query.filter(club=Club.objects.with_id(request.args['club']))
+            query = query.filter(club=g.Club.objects.with_id(request.args['club']))
         if 'draft' in request.args:
             if request.args['draft'] == 'true':
                 query = query.filter(draft=True)
@@ -39,7 +39,7 @@ class NewsListResource(Resource):
         if not current_user.is_admin() and not current_user.has_any_permission('club', args['club'], ['admin', 'news']):
             return abort(401)
 
-        news = News(
+        news = g.News(
             name=args['name'],
             club=args['club'],
             date=arrow.utcnow().datetime,
@@ -56,12 +56,12 @@ class NewsListResource(Resource):
 class NewsResource(Resource):
     @marshal_with(news_fields)
     def get(self, news_id):
-        return News.objects.with_id(news_id)
+        return g.News.objects.with_id(news_id)
 
     @login_required
     @marshal_with(news_fields)
     def put(self, news_id):
-        news = News.objects.with_id(news_id)
+        news = g.News.objects.with_id(news_id)
 
         if not current_user.is_admin() and not current_user.has_any_permission('club', news.club.id, ['admin', 'news']):
             return abort(401)
@@ -90,7 +90,7 @@ class NewsResource(Resource):
 
     @login_required
     def delete(self, news_id):
-        news = News.objects.with_id(news_id)
+        news = g.News.objects.with_id(news_id)
         if not current_user.is_admin() and not current_user.has_any_permission('club', news.club.id, ['admin', 'news']):
             return abort(401)
 
@@ -101,7 +101,7 @@ class NewsResource(Resource):
 class NewsMediasResource(Resource):
     @marshal_with(news_fields)
     def post(self, news_id):
-        news = News.objects.with_id(news_id)
+        news = g.News.objects.with_id(news_id)
 
         if not current_user.is_admin() and not current_user.has_any_permission('club', news.club.id, ['admin', 'news']):
             return abort(401)
@@ -124,4 +124,4 @@ class NewsMediasResource(Resource):
             url='https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/news/' + str(news.id) + '/' + uid
         ))
 
-        return News.objects.with_id(news_id)
+        return g.News.objects.with_id(news_id)
