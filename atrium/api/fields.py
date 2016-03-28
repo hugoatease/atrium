@@ -24,6 +24,7 @@ club_fields = {
     'id': fields.String,
     'slug': fields.String,
     'name': fields.String,
+    'facebook_page': fields.String,
     'logo': fields.String,
     'description': fields.String,
     'members': fields.List(fields.Nested(profile_fields))

@@ -14,6 +14,7 @@ var ClubEdit = React.createClass({
             slug: this.props.params.slug,
             name: null,
             description: null,
+            facebook_page: null,
             members: [],
             logo: null,
             uploading: false
@@ -32,7 +33,8 @@ var ClubEdit = React.createClass({
             this.setState({
                 slug: null,
                 name: null,
-                description: null
+                description: null,
+                facebook_page: null
             })
         }
     },
@@ -62,12 +64,17 @@ var ClubEdit = React.createClass({
         });
     },
 
+    handleFacebookChange: function(ev) {
+        this.setState({facebook_page: ev.target.value});
+    },
+
     save: function(ev) {
         ev.preventDefault();
         var data = {
             slug: this.state.slug,
             name: this.state.name,
-            description: this.state.description
+            description: this.state.description,
+            facebook_page: this.state.facebook_page
         };
 
         if (!this.props.params.slug) {
@@ -184,6 +191,10 @@ var ClubEdit = React.createClass({
                         <label>
                             <span>Name</span>
                             <input type="text" placeholder="Club name" value={this.state.name} onChange={this.handleNameChange} />
+                        </label>
+                        <label>
+                            <span>Facebook Page ID</span>
+                            <input type="text" placeholder="Club name" value={this.state.facebook_page} onChange={this.handleFacebookChange} />
                         </label>
                         {logo}
                         <label>

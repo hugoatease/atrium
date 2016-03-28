@@ -24,12 +24,14 @@ class ClubListResource(Resource):
         parser.add_argument('slug', type=unicode, required=True)
         parser.add_argument('name', type=unicode, required=True)
         parser.add_argument('description', type=unicode, required=True)
+        parser.add_argument('facebook_page', type=unicode)
         args = parser.parse_args()
 
         club = Club(
             slug=args['slug'],
             name=args['name'],
-            description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
+            description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES),
+            facebook_page=args['facebook_page']
         )
 
         club.save()
@@ -52,9 +54,10 @@ class ClubResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=unicode, store_missing=False)
         parser.add_argument('description', type=unicode, store_missing=False)
+        parser.add_argument('facebook_page', type=unicode, store_missing=False)
         args = parser.parse_args()
 
-        for field in ['name']:
+        for field in ['name', 'facebook_page']:
             if field in args.keys():
                 setattr(club, field, args[field])
 

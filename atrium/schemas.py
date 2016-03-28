@@ -24,6 +24,7 @@ class Profile(db.Document):
 class Club(db.Document):
     slug = db.StringField(primary_key=True, required=True)
     name = db.StringField(required=True)
+    facebook_page = db.StringField()
     logo = db.StringField()
     description = db.StringField()
     members = db.ListField(db.ReferenceField(Profile))
