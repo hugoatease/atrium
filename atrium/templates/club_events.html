@@ -1,4 +1,5 @@
 {% extends 'club_base.html' %}
+{% block title %}{{club.name}} events - {% endblock %}
 {% block club_content %}
 {% if next_event %}
     {% with type=gettext('Next Event'), event=next_event %}
