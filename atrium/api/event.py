@@ -9,6 +9,7 @@ from atrium import s3conn
 from boto.s3.key import Key
 import bleach
 from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
+import requests
 
 
 class EventListResource(Resource):
@@ -24,34 +25,74 @@ class EventListResource(Resource):
     @marshal_with(event_fields)
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('name', type=unicode, required=True)
         parser.add_argument('club', type=unicode, required=True)
-        parser.add_argument('description', type=unicode, required=True)
-        parser.add_argument('start_date', type=unicode, required=True)
-        parser.add_argument('end_date', type=unicode, required=True)
-        parser.add_argument('facebook_id', type=unicode, required=False)
+        parser.add_argument('name', type=unicode, store_missing=False)
+        parser.add_argument('description', type=unicode, store_missing=False)
+        parser.add_argument('start_date', type=unicode, store_missing=False)
+        parser.add_argument('end_date', type=unicode, store_missing=False)
+        parser.add_argument('facebook_id', type=unicode, store_missing=False)
         parser.add_argument('place', type=dict, store_missing=False)
         args = parser.parse_args()
 
         if not current_user.is_admin() and not current_user.has_any_permission('club', args['club'], ['admin', 'events']):
             return abort(401)
 
-        event = Event(
-            name=args['name'],
-            club=args['club'],
-            description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES),
-            start_date=arrow.get(args['start_date']).datetime,
-            end_date=arrow.get(args['end_date']).datetime,
-            facebook_id=args['facebook_id']
-        )
-
-        if 'place' in args.keys():
-            event.place = Place(
-                name=args['place']['name'],
-                address=args['place']['address']
+        def event_from_args(args):
+            event = Event(
+                name=args['name'],
+                club=args['club'],
+                description=bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES),
+                start_date=arrow.get(args['start_date']).datetime,
+                end_date=arrow.get(args['end_date']).datetime,
+                facebook_id=args['facebook_id']
             )
 
-        event.save()
+            if 'place' in args.keys():
+                event.place = Place(
+                    name=args['place']['name'],
+                    address=args['place']['address']
+                )
+
+            event.save()
+            return event
+
+        def event_from_facebook(args, data):
+            event = Event(
+                club=args['club'],
+                facebook_id=data['id'],
+                name=data['name'],
+                description=data['description'].replace('\n', '<br />'),
+                start_date=arrow.get(data['start_time']).datetime,
+                end_date=arrow.get(data['end_time']).datetime
+            )
+
+            if 'place' in data.keys():
+                event.place = Place(
+                    name=data['place']['name'],
+                    address=data['place']['location']['street'] + ', ' + data['place']['location']['city'] + ', ' + data['place']['location']['country']
+                )
+            event.save()
+            bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
+            key = Key(bucket)
+            key.key = 'events/' + str(event.id)
+            key.content_type = 'image/jpeg'
+            key.set_contents_from_string(requests.get(data['cover']['source']).content)
+            key.make_public()
+            event.poster = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/events/' + str(event.id)
+            event.save()
+
+        if 'facebook_id' not in args.keys() or args['facebook_id'] is None:
+            for key in ['name', 'description', 'start_date', 'end_date']:
+                if key not in args.keys():
+                    return abort(400)
+            event = event_from_args(args)
+        else:
+            data = requests.get('https://graph.facebook.com/' + args['facebook_id'], params={
+                'access_token': current_app.config['FACEBOOK_APPID'] + '|' + current_app.config['FACEBOOK_SECRET'],
+                'fields': 'cover,name,description,place,start_time,end_time'
+            }).json()
+            event = event_from_facebook(args, data)
+
         return event
 
 

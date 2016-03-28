@@ -23,7 +23,20 @@ var FacebookEvents = React.createClass({
     },
 
     importEvent: function(id) {
-        humane.log('Imported ' + id);
+        humane.log('Importing ' + id + '. Please wait');
+        request.post('/api/events')
+            .send({
+                club: this.props.params.slug,
+                facebook_id: id
+            })
+            .end(function(err, res) {
+                if (err) {
+                    humane.log('Failed to import ' + id);
+                }
+                else {
+                    humane.log(id + ' has been imported');
+                }
+            }.bind(this));
     },
 
     render: function() {
