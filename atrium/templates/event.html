@@ -18,7 +18,7 @@
                 <h6>{{gettext('To')}} {{format_datetime(event.end_date)}}</h6>
             </div>
         </div>
-        {% if show_description %}
+        {% if show_description and event.description %}
         <div class="row">
             <div class="small-12 column">
                 <p>{{event.description|safe}}</p>

@@ -38,7 +38,7 @@ class Place(db.EmbeddedDocument):
 class Event(db.Document):
     name = db.StringField(required=True)
     club = db.ReferenceField(Club, required=True)
-    description = db.StringField(required=True)
+    description = db.StringField()
     start_date = db.DateTimeField(required=True)
     end_date = db.DateTimeField(required=True)
     poster = db.StringField()

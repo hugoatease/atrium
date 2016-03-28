@@ -61,9 +61,11 @@ class EventListResource(Resource):
                 club=args['club'],
                 facebook_id=data['id'],
                 name=data['name'],
-                description=data['description'].replace('\n', '<br />'),
                 start_date=arrow.get(data['start_time']).datetime,
             )
+
+            if 'description' in data.keys():
+                event.description = data['description'].replace('\n', '<br />')
 
             if 'end_time' in data.keys():
                 event.end_date = arrow.get(data['end_time']).datetime

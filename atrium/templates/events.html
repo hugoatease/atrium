@@ -20,8 +20,10 @@
         {% endif %}
     </div>
     <div class="medium-9 column">
-        <h3>Description</h3><hr />
-        {{event.description|safe}}
+        {% if event.description %}
+            <h3>Description</h3><hr />
+            {{event.description|safe}}
+        {% endif %}
     </div>
 </div>
 {% endblock %}
