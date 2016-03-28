@@ -31,7 +31,7 @@ app.config['MONGODB_SETTINGS'] = {
     'tz_aware': True
 }
 
-etcd_client = etcd.Client(port=2379)
+etcd_client = etcd.Client(host=app.config['ETCD_HOST'], port=app.config['ETCD_PORT'])
 
 login_manager.init_app(app)
 
