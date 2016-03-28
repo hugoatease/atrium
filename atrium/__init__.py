@@ -218,7 +218,7 @@ def events(event_id):
     event = Event.objects.with_id(event_id)
 
     gmaps = None
-    if app.config['GOOGLE_API_KEY'] and event.place.address is not None:
+    if app.config['GOOGLE_API_KEY'] and event.place is not None and event.place.address is not None:
         gmaps = "https://www.google.com/maps/embed/v1/place?" \
                 "q=" + quote(event.place.address.encode('utf-8')) + "&key=" + app.config['GOOGLE_API_KEY']
 

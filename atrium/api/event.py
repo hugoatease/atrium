@@ -63,14 +63,21 @@ class EventListResource(Resource):
                 name=data['name'],
                 description=data['description'].replace('\n', '<br />'),
                 start_date=arrow.get(data['start_time']).datetime,
-                end_date=arrow.get(data['end_time']).datetime
             )
+
+            if 'end_time' in data.keys():
+                event.end_date = arrow.get(data['end_time']).datetime
+            else:
+                event.end_date = arrow.get(data['end_time']).replace(hours=2).datetime
 
             if 'place' in data.keys():
                 event.place = Place(
-                    name=data['place']['name'],
-                    address=data['place']['location']['street'] + ', ' + data['place']['location']['city'] + ', ' + data['place']['location']['country']
+                    name=data['place']['name']
                 )
+                if 'location' in data['place'].keys():
+                    event.address = data['place']['location']['street'] + ', ' + data['place']['location']['city'] \
+                                  + ', ' + data['place']['location']['country']
+
             event.save()
             bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
             key = Key(bucket)
