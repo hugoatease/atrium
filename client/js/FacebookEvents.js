@@ -35,6 +35,7 @@ var FacebookEvents = React.createClass({
                 }
                 else {
                     humane.log(id + ' has been imported');
+                    this.fetch();
                 }
             }.bind(this));
     },
