@@ -68,7 +68,7 @@ class EventListResource(Resource):
             if 'end_time' in data.keys():
                 event.end_date = arrow.get(data['end_time']).datetime
             else:
-                event.end_date = arrow.get(data['end_time']).replace(hours=2).datetime
+                event.end_date = arrow.get(data['start_time']).replace(hours=2).datetime
 
             if 'place' in data.keys():
                 event.place = Place(
