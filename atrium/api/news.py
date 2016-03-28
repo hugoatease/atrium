@@ -114,14 +114,14 @@ class NewsMediasResource(Resource):
 
         bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
         key = Key(bucket)
-        key.key = 'news/' + str(news.id) + '/' + uid
+        key.key = g.tenant + '/news/' + str(news.id) + '/' + uid
         key.content_type = args['media'].mimetype
         key.set_contents_from_file(args['media'].stream)
         key.make_public()
 
         news.update(add_to_set__medias=Media(
             name=uid,
-            url='https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/news/' + str(news.id) + '/' + uid
+            url='https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/' + g.tenant + '/news/' + str(news.id) + '/' + uid
         ))
 
         return g.News.objects.with_id(news_id)

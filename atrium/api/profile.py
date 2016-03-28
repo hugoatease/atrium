@@ -76,12 +76,12 @@ class ProfilePhoto(Resource):
 
         bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
         key = Key(bucket)
-        key.key = 'profiles/' + str(profile.id)
+        key.key = g.tenant + '/profiles/' + str(profile.id)
         key.content_type = args['photo'].mimetype
         key.set_contents_from_file(args['photo'].stream)
         key.make_public()
 
-        profile.photo = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/profiles/' + str(profile.id)
+        profile.photo = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/ ' + g.tenant + '/profiles/' + str(profile.id)
         profile.save()
 
         return profile
@@ -103,7 +103,7 @@ class ProfilePhoto(Resource):
 
         if 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/profiles/' in photo_url:
             bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
-            key = bucket.get_key('profiles/' + str(profile.id))
+            key = bucket.get_key(g.tenant + '/profiles/' + str(profile.id))
             key.delete()
 
         return '', 204

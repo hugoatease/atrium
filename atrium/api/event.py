@@ -83,11 +83,11 @@ class EventListResource(Resource):
             event.save()
             bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
             key = Key(bucket)
-            key.key = 'events/' + str(event.id)
+            key.key = g.tenant + '/events/' + str(event.id)
             key.content_type = 'image/jpeg'
             key.set_contents_from_string(requests.get(data['cover']['source']).content)
             key.make_public()
-            event.poster = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/events/' + str(event.id)
+            event.poster = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/' + g.tenant + '/events/' + str(event.id)
             event.save()
 
         if 'facebook_id' not in args.keys() or args['facebook_id'] is None:
@@ -169,12 +169,12 @@ class EventPoster(Resource):
 
         bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
         key = Key(bucket)
-        key.key = 'events/' + str(event.id)
+        key.key = g.tenant + '/events/' + str(event.id)
         key.content_type = args['poster'].mimetype
         key.set_contents_from_file(args['poster'].stream)
         key.make_public()
 
-        event.poster = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/events/' + str(event.id)
+        event.poster = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/' + g.tenant + '/events/' + str(event.id)
         event.save()
 
         return event
@@ -190,7 +190,7 @@ class EventPoster(Resource):
         event.save()
 
         bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
-        key = bucket.get_key('events/' + str(event.id))
+        key = bucket.get_key(g.tenant + '/events/' + str(event.id))
         key.delete()
 
         return '', 204

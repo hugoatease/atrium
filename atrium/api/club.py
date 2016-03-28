@@ -116,12 +116,12 @@ class ClubLogoResource(Resource):
 
         bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
         key = Key(bucket)
-        key.key = 'clubs/' + str(club.id)
+        key.key = g.tenant + '/clubs/' + str(club.id)
         key.content_type = args['logo'].mimetype
         key.set_contents_from_file(args['logo'].stream)
         key.make_public()
 
-        club.logo = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/clubs/' + str(club.id)
+        club.logo = 'https://' + current_app.config['AWS_S3_BUCKET'] + '.s3.amazonaws.com/' + g.tenant + '/clubs/' + str(club.id)
         club.save()
 
         return club
@@ -136,7 +136,7 @@ class ClubLogoResource(Resource):
         club.save()
 
         bucket = s3conn.get_bucket(current_app.config['AWS_S3_BUCKET'])
-        key = bucket.get_key('clubs/' + str(club.id))
+        key = bucket.get_key(g.tenant + '/clubs/' + str(club.id))
         key.delete()
 
         return '', 204
