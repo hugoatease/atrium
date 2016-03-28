@@ -1,4 +1,11 @@
 {% extends 'base.html' %}
+{% block meta %}
+<meta property="og:title" content="{{club.name}}" />
+<meta property="og:type" content="website" />
+{% if club.logo %}
+<meta property="og:image" content="{{club.logo}}" />
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="row">
     <div class="medium-3 column">
