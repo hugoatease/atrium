@@ -1,4 +1,24 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600,700");
+$body-font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
 $label-font-size: 1rem;
+$body-background: #EFEFEF;
+$foundation-palette: (
+  primary: #2D2D37,
+  secondary: #1A2530,
+  success: #3adb76,
+  warning: #ffae00,
+  alert: #ec5840,
+);
+$callout-background-fade: 25%;
+
+.callout.secondary {
+  color: white;
+  word-wrap: break-word;
+}
+
+.callout.secondary a {
+  color: white;
+}
 
 @import "node_modules/foundation-sites/scss/foundation";
 @include foundation-everything;
