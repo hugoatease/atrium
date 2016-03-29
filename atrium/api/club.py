@@ -196,3 +196,26 @@ class ClubFacebookEventsResource(Resource):
         events = filter(filter_events, events)
 
         return events
+
+
+class ClubFacebookPostsResource(Resource):
+    def get(self, club_slug):
+        club = g.Club.objects.with_id(club_slug)
+        if club.facebook_page is None:
+            return abort(404)
+
+        posts = []
+        response = requests.get('https://graph.facebook.com/' + club.facebook_page + '/posts', params={
+            'access_token': current_app.config['FACEBOOK_APPID'] + '|' + current_app.config['FACEBOOK_SECRET'],
+            'fields': 'object_id,created_time,message',
+            'limit': 100
+        }).json()
+
+        def filter_news(news):
+            if 'message' in news.keys():
+                return True
+            return False
+
+        news = filter(filter_news, response['data'])
+
+        return news

@@ -57,6 +57,7 @@ class Media(db.EmbeddedDocument):
 
 class News(db.Document):
     name = db.StringField(required=True)
+    facebook_id = db.StringField()
     club = db.ReferenceField(Club, required=True)
     date = db.DateTimeField(required=True)
     author = db.ReferenceField(Profile, required=True)
