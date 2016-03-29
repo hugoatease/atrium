@@ -16,6 +16,29 @@
     analytics.page()
     }}();
     </script>
+    <script type='text/javascript'>
+      var googletag = googletag || {};
+      googletag.cmd = googletag.cmd || [];
+      (function() {
+        var gads = document.createElement('script');
+        gads.async = true;
+        gads.type = 'text/javascript';
+        var useSSL = 'https:' == document.location.protocol;
+        gads.src = (useSSL ? 'https:' : 'http:') +
+          '//www.googletagservices.com/tag/js/gpt.js';
+        var node = document.getElementsByTagName('script')[0];
+        node.parentNode.insertBefore(gads, node);
+      })();
+    </script>
+
+    <script type='text/javascript'>
+      googletag.cmd.push(function() {
+        googletag.defineSlot('/62624113/ATRIUMTOP', [728, 90], 'div-gpt-ad-1459220730954-0').addService(googletag.pubads());
+        googletag.pubads().enableSingleRequest();
+        googletag.pubads().collapseEmptyDivs();
+        googletag.enableServices();
+      });
+    </script>
     {% endif %}
 </head>
 <body>
@@ -45,17 +68,14 @@
     </div>
 </div>
 <br />
-{% block content %}{% endblock %}
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- EveryVPN -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-5339650343557855"
-     data-ad-slot="2927767523"
-     data-ad-format="auto"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
+<!-- /62624113/ATRIUMTOP -->
+<div id='div-gpt-ad-1459220730954-0' style='height:90px; width:728px;'>
+<script type='text/javascript'>
+googletag.cmd.push(function() { googletag.display('div-gpt-ad-1459220730954-0'); });
 </script>
+</div>
+</div>
+{% block content %}{% endblock %}
 <div class="row">
     <div class="columns small-12">
         <hr />
