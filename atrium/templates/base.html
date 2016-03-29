@@ -16,6 +16,7 @@
     analytics.page()
     }}();
     </script>
+    {% endif %}
     <script type='text/javascript'>
       var googletag = googletag || {};
       googletag.cmd = googletag.cmd || [];
@@ -39,7 +40,6 @@
         googletag.enableServices();
       });
     </script>
-    {% endif %}
 </head>
 <body>
 <div id="fb-root"></div>
@@ -67,14 +67,18 @@
         </ul>
     </div>
 </div>
+<br />
 <div class="row">
-    <!-- /62624113/ATRIUMTOP -->
-    <div id='div-gpt-ad-1459220730954-0' style='height:90px; width:728px;'>
-    <script type='text/javascript'>
-    googletag.cmd.push(function() { googletag.display('div-gpt-ad-1459220730954-0'); });
-    </script>
+    <div class="dfp-top">
+        <!-- /62624113/ATRIUMTOP -->
+        <div id='div-gpt-ad-1459220730954-0' style='height:90px; width:728px;'>
+        <script type='text/javascript'>
+        googletag.cmd.push(function() { googletag.display('div-gpt-ad-1459220730954-0'); });
+        </script>
+        </div>
     </div>
 </div>
+<br />
 {% block content %}{% endblock %}
 <div class="row">
     <div class="columns small-12">
