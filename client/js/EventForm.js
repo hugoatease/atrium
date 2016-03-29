@@ -177,16 +177,23 @@ var EventCreate = React.createClass({
             );
         }
 
+        var facebook_id = null;
+        if (this.props.event_id) {
+            facebook_id = (
+                <label>
+                    <span>Facebook ID</span>
+                    <input type="text" placeholder="Facebook ID" value={this.state.facebook_id} onChange={this.changedFacebookID} />
+                </label>
+            );
+        }
+
         return (
             <form onSubmit={this.save}>
                 <label>
                     <span>Event name</span>
                     <input type="text" placeholder="Event name" value={this.state.name} onChange={this.changedName} />
                 </label>
-                <label>
-                    <span>Facebook ID</span>
-                    <input type="text" placeholder="Facebook ID" value={this.state.facebook_id} onChange={this.changedFacebookID} />
-                </label>
+                {facebook_id}
                 <label>
                     <span>Event description</span>
                     <ReactQuill placeholder="Event description" value={this.state.description} theme="snow" onChange={this.changedDescription} />
