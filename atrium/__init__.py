@@ -59,17 +59,26 @@ def tenant_handler():
     except etcd.EtcdKeyNotFound:
         return abort(404)
 
+    tenant_keys = etcd_client.read('/atrium/tenants/' + tenant)
+    tenant_config = {}
+    for result in tenant_keys.children:
+        tenant_config[result.key.split('/atrium/tenants/' + tenant + '/')[1]] = result.value
+
     g.tenant = tenant
-    g.openid = {
-        'authorization_endpoint': etcd_client.read('/atrium/tenants/' + tenant + '/openid_authorization').value,
-        'token_endpoint': etcd_client.read('/atrium/tenants/' + tenant + '/openid_token').value,
-        'userinfo_endpoint': etcd_client.read('/atrium/tenants/' + tenant + '/openid_userinfo').value,
-        'client_id': etcd_client.read('/atrium/tenants/' + tenant + '/openid_client').value,
-        'client_secret': etcd_client.read('/atrium/tenants/' + tenant + '/openid_secret').value,
-        'redirect_uri': etcd_client.read('/atrium/tenants/' + tenant + '/openid_redirect').value,
-        'issuer_key': str(etcd_client.read('/atrium/tenants/' + tenant + '/openid_issuer_key').value),
-        'issuer_claim': etcd_client.read('/atrium/tenants/' + tenant + '/openid_issuer_claim').value
-    }
+    openid_items = [
+        ('authorization_endpoint', 'openid_authorization'),
+        ('token_endpoint', 'openid_token'),
+        ('userinfo_endpoint', 'openid_userinfo'),
+        ('client_id', 'openid_client'),
+        ('client_secret', 'openid_secret'),
+        ('redirect_uri', 'openid_redirect'),
+        ('issuer_key', 'openid_issuer_key'),
+        ('issuer_claim', 'openid_issuer_claim')
+    ]
+
+    g.openid = {}
+    for item in openid_items:
+        g.openid[item[0]] = str(tenant_config[item[1]])
 
     mongoengine.register_connection(tenant, name=tenant, host=app.config['MONGODB_HOST'], port=app.config['MONGODB_PORT'], connect=False, tz_aware=True)
     for schema in schemas:
