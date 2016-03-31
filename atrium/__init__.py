@@ -279,3 +279,8 @@ def enroll(token):
     user.update(add_to_set__permissions=token['permission'])
 
     return redirect(url_for('editor'))
+
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
