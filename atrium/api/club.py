@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from .fields import club_fields, club_permissions_fields
 import werkzeug.datastructures
 from atrium import s3conn
+from atrium.schemas import ClubFacebookPublish
 from boto.s3.key import Key
 import bleach
 from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
@@ -56,6 +57,7 @@ class ClubResource(Resource):
         parser.add_argument('name', type=unicode, store_missing=False)
         parser.add_argument('description', type=unicode, store_missing=False)
         parser.add_argument('facebook_page', type=unicode, store_missing=False)
+        parser.add_argument('facebook_publish', type=dict, store_missing=False, location='json')
         args = parser.parse_args()
 
         for field in ['name', 'facebook_page']:
@@ -64,6 +66,17 @@ class ClubResource(Resource):
 
         if 'description' in args.keys():
             club.description = bleach.clean(args['description'], tags=ALLOWED_TAGS, styles=ALLOWED_STYLES, attributes=ALLOWED_ATTRIBUTES)
+
+        if 'facebook_publish' in args.keys():
+            if args['facebook_publish']['id'] is None:
+                club.facebook_publish = None
+            else:
+                publish = ClubFacebookPublish(
+                    id=args['facebook_publish']['id'],
+                    name=args['facebook_publish']['name'],
+                    access_token=args['facebook_publish']['access_token']
+                )
+                club.facebook_publish = publish
 
         club.save()
         return club

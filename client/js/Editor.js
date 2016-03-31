@@ -35,11 +35,12 @@ var Editor = React.createClass({
                         var eventsLink = <Link to={'/editor/clubs/' + club + '/events'}><button className="button primary">Events</button></Link>;
                         var newsLink = <Link to={'/editor/clubs/' + club + '/news'}><button className="button primary">News</button></Link>;
                         var permissionsLink = <Link to={'/editor/clubs/' + club + '/permissions'}><button className="button primary">Permissions</button></Link>;
+                        var facebookLink = <Link to={'/editor/clubs/' + club + '/facebook'}><button className="button primary">Facebook publishing</button></Link>;
                         var links = {
-                            edit: [editLink],
+                            edit: [editLink, facebookLink],
                             events: [eventsLink],
                             news: [newsLink],
-                            admin: [editLink, "\u00a0", permissionsLink, "\u00a0", eventsLink, "\u00a0", newsLink]
+                            admin: [editLink, "\u00a0", permissionsLink, "\u00a0", eventsLink, "\u00a0", newsLink, "\u00a0", facebookLink]
                         }
                         return (
                             <div className="callout">

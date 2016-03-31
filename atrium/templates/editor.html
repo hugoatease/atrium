@@ -6,6 +6,8 @@
 
 {% block javascript %}
 <script type="text/javascript">
-    atrium.renderEditor(document.getElementById('editor'));
+    window.addEventListener('load', function() {
+        atrium.renderEditor(document.getElementById('editor'));
+    });
 </script>
 {% endblock %}

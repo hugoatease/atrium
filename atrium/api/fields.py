@@ -20,6 +20,11 @@ profile_fields = {
     'birthday': fields.DateTime
 }
 
+facebook_publish = {
+    'id': fields.String,
+    'name': fields.String
+}
+
 club_fields = {
     'id': fields.String,
     'slug': fields.String,
@@ -27,7 +32,8 @@ club_fields = {
     'facebook_page': fields.String,
     'logo': fields.String,
     'description': fields.String,
-    'members': fields.List(fields.Nested(profile_fields))
+    'members': fields.List(fields.Nested(profile_fields)),
+    'facebook_publish': fields.Nested(facebook_publish)
 }
 
 place_fields = {

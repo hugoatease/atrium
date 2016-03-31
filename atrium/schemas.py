@@ -21,6 +21,12 @@ class Profile(db.Document):
     birthday = db.DateTimeField()
 
 
+class ClubFacebookPublish(db.EmbeddedDocument):
+    id = db.StringField(required=True)
+    name = db.StringField(required=True)
+    access_token = db.StringField(required=True)
+
+
 class Club(db.Document):
     slug = db.StringField(primary_key=True, required=True)
     name = db.StringField(required=True)
@@ -28,6 +34,7 @@ class Club(db.Document):
     logo = db.StringField()
     description = db.StringField()
     members = db.ListField(db.ReferenceField(Profile))
+    facebook_publish = db.EmbeddedDocumentField(ClubFacebookPublish)
 
 
 class Place(db.EmbeddedDocument):
