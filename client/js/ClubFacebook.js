@@ -46,7 +46,7 @@ var ClubFacebook = React.createClass({
                facebook_publish: {
                    id: page.id,
                    name: page.name,
-                   access_token: page.name
+                   access_token: page.access_token
                }
             })
             .end(function(err, res) {

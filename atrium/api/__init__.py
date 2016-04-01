@@ -1,7 +1,7 @@
 from flask_restful import Api
 from .profile import ProfileResource, ProfileListResource, ProfilePhoto
 from .club import ClubListResource, ClubResource, ClubMembersResource, ClubLogoResource, ClubPermissionsResource, ClubFacebookEventsResource, ClubFacebookPostsResource
-from .event import EventListResource, EventResource, EventPoster
+from .event import EventListResource, EventResource, EventPoster, EventFacebookPublish
 from .news import NewsListResource, NewsResource, NewsMediasResource
 from .users import UsersListResource, UsersResource, UsersPermissionsResource
 from .permissions import PermissionsResource, EnrollResource
@@ -23,6 +23,7 @@ api.add_resource(ClubFacebookPostsResource, '/api/clubs/<club_slug>/facebook_pos
 api.add_resource(EventListResource, '/api/events')
 api.add_resource(EventResource, '/api/events/<event_id>')
 api.add_resource(EventPoster, '/api/events/<event_id>/poster')
+api.add_resource(EventFacebookPublish, '/api/events/<event_id>/facebook_publish')
 
 api.add_resource(NewsListResource, '/api/news')
 api.add_resource(NewsResource, '/api/news/<news_id>')

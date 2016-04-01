@@ -1,4 +1,4 @@
-from flask import request, current_app, g
+from flask import request, current_app, g, url_for
 from flask_login import login_required, current_user
 from flask_restful import Resource, marshal_with, reqparse, abort
 from atrium.schemas import Place
@@ -194,3 +194,20 @@ class EventPoster(Resource):
         key.delete()
 
         return '', 204
+
+
+class EventFacebookPublish(Resource):
+    @login_required
+    def post(self, event_id):
+        event = g.Event.objects.with_id(event_id)
+        if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
+            return abort(401)
+
+        response = requests.post('https://graph.facebook.com/v2.5/' + event.club.facebook_publish.id + '/feed', params={
+            'access_token': event.club.facebook_publish.access_token
+        }, data={
+            'message': event.name + ' par ' + event.club.name + '\n' + url_for('events', event_id=event.id, _external=True) + '\n\n' + event.description,
+            'link': url_for('events', event_id=event.id, _external=True)
+        })
+
+        return response.json()
