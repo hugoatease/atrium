@@ -10,6 +10,7 @@ from boto.s3.key import Key
 import bleach
 from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
 import requests
+import pypandoc
 
 
 class EventListResource(Resource):
@@ -206,7 +207,7 @@ class EventFacebookPublish(Resource):
         response = requests.post('https://graph.facebook.com/v2.5/' + event.club.facebook_publish.id + '/feed', params={
             'access_token': event.club.facebook_publish.access_token
         }, data={
-            'message': event.name + ' par ' + event.club.name + '\n' + url_for('events', event_id=event.id, _external=True) + '\n\n' + event.description,
+            'message': event.name + ' par ' + event.club.name + '\n\n' + pypandoc.convert(event.description, 'textile', format='html'),
             'link': url_for('events', event_id=event.id, _external=True)
         })
 
