@@ -207,7 +207,7 @@ class EventFacebookPublish(Resource):
         response = requests.post('https://graph.facebook.com/v2.5/' + event.club.facebook_publish.id + '/feed', params={
             'access_token': event.club.facebook_publish.access_token
         }, data={
-            'message': event.name + ' par ' + event.club.name + '\n\n' + pypandoc.convert(event.description, 'textile', format='html'),
+            'message': event.name + ' par ' + event.club.name + '.\n\n' + pypandoc.convert(event.description, 'plain', format='html'),
             'link': url_for('events', event_id=event.id, _external=True)
         })
 
