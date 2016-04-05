@@ -1,6 +1,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var request = require('superagent');
+var find = require('lodash/find');
 
 var ClubFacebook = React.createClass({
     getInitialState: function() {
@@ -14,8 +15,14 @@ var ClubFacebook = React.createClass({
     componentDidMount: function() {
         window.FB.getLoginStatus(function(response) {
             if (response.status === 'connected') {
-                this.setState({connected: true});
-                this.fetchPages();
+                window.FB.api('/me/permissions', function(response) {
+                    var manage = find(response.data, {permission: 'manage_pages', status: 'granted'});
+                    var publish = find(response.data, {permission: 'publish_pages', status: 'granted'});
+                    if (manage && publish) {
+                        this.setState({connected: true});
+                        this.fetchPages();
+                    }
+                }.bind(this));
             }
         }.bind(this));
 
@@ -33,9 +40,11 @@ var ClubFacebook = React.createClass({
     },
 
     login: function() {
-        window.FB.login(function() {
-            this.setState({connected: true});
-            this.fetchPages();
+        window.FB.login(function(response) {
+            if (response.authResponse) {
+                this.setState({connected: true});
+                this.fetchPages();
+            }
         }.bind(this), {scope: 'manage_pages,publish_pages'});
     },
 
@@ -73,7 +82,7 @@ var ClubFacebook = React.createClass({
                     <div className="callout">
                         <h3>Facebook login</h3>
                         <p>
-                            You must authorize Atrium with Facebook in order to publish on your pages.
+                            You must authorize Atrium to publish on your Facebook pages.
                         </p>
                         <button className="button primary" onClick={this.login}>Login with Facebook</button>
                     </div>
