@@ -20,6 +20,8 @@ import rollbar.contrib.flask
 from urllib import quote
 import etcd
 import mongoengine
+from textblob import TextBlob
+import pypandoc
 
 
 app = Flask(__name__)
@@ -259,7 +261,14 @@ def events(event_id):
         gmaps = "https://www.google.com/maps/embed/v1/place?" \
                 "q=" + quote(event.place.address.encode('utf-8')) + "&key=" + app.config['GOOGLE_API_KEY']
 
-    return render_template('events.html', event=event, gmaps=gmaps)
+    ogp_description = None
+    if event.description is not None:
+        def sentence_to_string(item):
+            return unicode(item)
+        sentences = map(sentence_to_string, TextBlob(pypandoc.convert(event.description, 'plain', format='html')).sentences)
+        ogp_description = ''.join(sentences[0:3])
+
+    return render_template('events.html', event=event, gmaps=gmaps, ogp_description=ogp_description)
 
 @app.route('/clubs/<club_slug>/events')
 def club_events(club_slug):
