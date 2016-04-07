@@ -4,21 +4,9 @@ var EventPoster = require('./EventPoster');
 var request = require('superagent');
 var browserHistory = require('react-router').browserHistory;
 var humane = require('humane-js');
+var Link = require('react-router').Link;
 
 var EventEdit = React.createClass({
-    facebookPublish: function() {
-        humane.log('Publishing event on Facebook...')
-        request.post('/api/events/' + this.props.params.event_id + '/facebook_publish')
-            .end(function(err, res) {
-                if (err) {
-                    humane.log('Failed to publish event on Facebook');
-                }
-                else {
-                    humane.log('Event published on Facebook');
-                }
-            });
-    },
-
     remove: function() {
         request.del('/api/events/' + this.props.params.event_id)
             .end(function(err, res) {
@@ -28,13 +16,14 @@ var EventEdit = React.createClass({
     },
 
     render: function() {
-        console.log(this.props);
         return (
             <div className="row">
                 <div className="medium-6 column">
                     <div className="clearfix">
                         <h5 className="float-left">Event details</h5>
-                        <button className="button primary float-right" onClick={this.facebookPublish}>Publish to Facebook</button>
+                        <Link className="button primary float-right" to={'/editor/events/' + this.props.params.event_id + '/facebook_publish'}>
+                            Publish to Facebook
+                        </Link>
                     </div>
                     <EventForm event_id={this.props.params.event_id} />
                     <button onClick={this.remove} className="button alert">Delete event</button>

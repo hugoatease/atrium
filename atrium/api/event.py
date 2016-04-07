@@ -204,10 +204,14 @@ class EventFacebookPublish(Resource):
         if not current_user.is_admin() and not current_user.has_any_permission('club', event.club.id, ['admin', 'events']):
             return abort(401)
 
+        parser = reqparse.RequestParser()
+        parser.add_argument('message', type=unicode, required=True)
+        args = parser.parse_args()
+
         response = requests.post('https://graph.facebook.com/v2.5/' + event.club.facebook_publish.id + '/feed', params={
             'access_token': event.club.facebook_publish.access_token
         }, data={
-            'message': event.name + ' par ' + event.club.name + '.\n\n' + pypandoc.convert(event.description, 'plain', format='html'),
+            'message': args['message'],
             'link': url_for('events', event_id=event.id, _external=True)
         })
 

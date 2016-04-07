@@ -266,7 +266,7 @@ def events(event_id):
         def sentence_to_string(item):
             return unicode(item)
         sentences = map(sentence_to_string, TextBlob(pypandoc.convert(event.description, 'plain', format='html')).sentences)
-        ogp_description = ''.join(sentences[0:3])
+        ogp_description = ' '.join(sentences[0:3])
 
     return render_template('events.html', event=event, gmaps=gmaps, ogp_description=ogp_description)
 
