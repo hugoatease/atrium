@@ -60,6 +60,15 @@ class UserHandler(UserMixin):
                 return True
         return False
 
+    def serialize(self):
+        return {
+            'sub': self.user.sub,
+            'email': self.user.email,
+            'admin': self.user.admin,
+            'permissions': self.user.permissions,
+            'facebook_token': self.user.facebook_token
+        }
+
 @login_manager.user_loader
 def load_user(user_id):
     return UserHandler(User.objects.with_id(user_id))

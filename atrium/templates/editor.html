@@ -7,7 +7,7 @@
 {% block javascript %}
 <script type="text/javascript">
     window.addEventListener('load', function() {
-        atrium.renderEditor(document.getElementById('editor'));
+        atrium.renderEditor(document.getElementById('editor'), JSON.parse('{{params|safe}}'));
     });
 </script>
 {% endblock %}

@@ -8,6 +8,7 @@ class User(db.Document):
     email = db.StringField(required=True)
     admin = db.BooleanField(required=True, default=False)
     permissions = db.ListField(db.StringField())
+    facebook_token = db.StringField()
 
 
 class Profile(db.Document):

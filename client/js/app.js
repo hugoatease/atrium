@@ -18,6 +18,7 @@ var FacebookEvents = require('./FacebookEvents');
 var FacebookNews = require('./FacebookNews');
 var ClubFacebook = require('./ClubFacebook');
 var FacebookEventPublish = require('./FacebookEventPublish');
+var merge = require('lodash/merge');
 
 var App = React.createClass({
    render: function() {
@@ -29,7 +30,18 @@ var App = React.createClass({
    }
 });
 
-function renderEditor(container) {
+function componentFactory(component, userProps) {
+    return React.createClass({
+        render: function() {
+            var props = {};
+            merge(props, this.props);
+            merge(props, userProps);
+            return React.createElement(component, props);
+        }
+    });
+}
+
+function renderEditor(container, props) {
     ReactDOM.render((
         <Router history={browserHistory}>
             <Route path="/editor" component={App}>
@@ -38,7 +50,7 @@ function renderEditor(container) {
                 <Route name="club-edit" path="clubs/:slug" component={ClubEdit} />
                 <Route name="profile-edit" path="profiles/:id" component={ProfileEdit} />
                 <Route name="club-events" path="clubs/:slug/events" component={ClubEvents} />
-                <Route name="club-facebook" path="clubs/:slug/facebook" component={ClubFacebook} />
+                <Route name="club-facebook" path="clubs/:slug/facebook" component={componentFactory(ClubFacebook, props)} />
                 <Route name="club-facebook-events" path="clubs/:slug/events/facebook" component={FacebookEvents} />
                 <Route name="club-facebook-events" path="clubs/:slug/news/facebook" component={FacebookNews} />
                 <Route name="event-edit" path="events/:event_id" component={EventEdit} />

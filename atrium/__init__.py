@@ -22,6 +22,7 @@ import etcd
 import mongoengine
 from textblob import TextBlob
 import pypandoc
+import json
 
 
 app = Flask(__name__)
@@ -182,11 +183,16 @@ def login_return():
 
     key = cryptography.hazmat.primitives.serialization.load_pem_public_key(g.openid['issuer_key'], backend=default_backend())
 
-    sub = jwt.decode(tokens['id_token'], key, audience=g.openid['client_id'])['sub']
+    id_token = jwt.decode(tokens['id_token'], key, audience=g.openid['client_id'])
+    sub = id_token['sub']
     info = requests.get(g.openid['userinfo_endpoint'], headers={'Authorization': 'Bearer ' + tokens['access_token']}).json()
 
+    facebook_token = None
+    if 'facebook_token' in id_token:
+        facebook_token = id_token['facebook_token']
+
     if g.User.objects.filter(sub=sub).first() is None:
-        user = g.User(sub=sub, email=info['email'])
+        user = g.User(sub=sub, email=info['email'], facebook_token=facebook_token)
         user.save()
         profile = g.Profile(
             user=user,
@@ -198,6 +204,7 @@ def login_return():
     else:
         user = g.User.objects.filter(sub=sub).first()
         user.email = info['email']
+        user.facebook_token = facebook_token
         user.save()
         profile = g.Profile.objects.filter(user=user).first()
         profile.first_name = info['given_name']
@@ -219,12 +226,12 @@ def logout():
 @app.route('/editor')
 @login_required
 def editor():
-    return render_template('editor.html')
+    return render_template('editor.html', params=json.dumps({'user': current_user.serialize()}))
 
 @app.route('/editor/<path:path>')
 @login_required
 def editor_all(path):
-    return render_template('editor.html')
+    return render_template('editor.html', params=json.dumps({'user': current_user.serialize()}))
 
 @app.route('/clubs')
 def clubs_list():

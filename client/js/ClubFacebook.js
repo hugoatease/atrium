@@ -7,24 +7,24 @@ var ClubFacebook = React.createClass({
     getInitialState: function() {
         return {
             connected: false,
+            authorized: false,
             pages: [],
             current: null
         }
     },
 
     componentDidMount: function() {
-        window.FB.getLoginStatus(function(response) {
-            if (response.status === 'connected') {
-                window.FB.api('/me/permissions', function(response) {
-                    var manage = find(response.data, {permission: 'manage_pages', status: 'granted'});
-                    var publish = find(response.data, {permission: 'publish_pages', status: 'granted'});
-                    if (manage && publish) {
-                        this.setState({connected: true});
-                        this.fetchPages();
-                    }
-                }.bind(this));
-            }
-        }.bind(this));
+        if (this.props.user.facebook_token) {
+            this.setState({connected: true});
+            window.FB.api('/me/permissions', {access_token: this.props.user.facebook_token}, function(response) {
+                var manage = find(response.data, {permission: 'manage_pages', status: 'granted'});
+                var publish = find(response.data, {permission: 'publish_pages', status: 'granted'});
+                if (manage && publish) {
+                    this.setState({authorized: true});
+                    this.fetchPages();
+                }
+            }.bind(this));
+        }
 
         request.get('/api/clubs/' + this.props.params.slug)
             .end(function(err, res) {
@@ -34,18 +34,9 @@ var ClubFacebook = React.createClass({
     },
 
     fetchPages: function() {
-        window.FB.api('/me/accounts', function(data) {
+        window.FB.api('/me/accounts', {access_token: this.props.user.facebook_token}, function(data) {
             this.setState({pages: data.data});
         }.bind(this));
-    },
-
-    login: function() {
-        window.FB.login(function(response) {
-            if (response.authResponse) {
-                this.setState({connected: true});
-                this.fetchPages();
-            }
-        }.bind(this), {scope: 'manage_pages,publish_pages'});
     },
 
     setPage: function() {
@@ -76,18 +67,37 @@ var ClubFacebook = React.createClass({
     },
 
     render: function() {
-        if (!this.state.connected) {
-            return (
-                <div className="row">
-                    <div className="callout">
-                        <h3>Facebook login</h3>
-                        <p>
-                            You must authorize Atrium to publish on your Facebook pages.
-                        </p>
-                        <button className="button primary" onClick={this.login}>Login with Facebook</button>
+        if (!this.state.authorized) {
+            if (!this.state.connected) {
+                return (
+                    <div className="row">
+                        <div className="callout">
+                            <h3>Facebook login</h3>
+                            <p>
+                                You must link your Atrium account in Facebook in order to use Facebook integration.
+                            </p>
+                            <a className="button primary" href="https://www.atrium-app.com/sso">Check your account</a>
+                        </div>
                     </div>
-                </div>
-            );
+                );
+            }
+            else {
+                return (
+                    <div className="row">
+                        <div className="callout">
+                            <h3>Missing Facebook permissions</h3>
+                            <p>
+                                You must grant Facebook page management permissions in order to publish on pages.
+                            </p>
+                            <a
+                                className="button primary"
+                                href={'/login?facebook_additional_permissions=manage_pages,publish_pages&next=' + window.location.pathname}>
+                                Grant permissions
+                            </a>
+                        </div>
+                    </div>
+                );
+            }
         }
         else {
             var current = null;
