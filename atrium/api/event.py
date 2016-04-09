@@ -11,6 +11,8 @@ import bleach
 from .bleachconfig import ALLOWED_TAGS, ALLOWED_STYLES, ALLOWED_ATTRIBUTES
 import requests
 import pypandoc
+from hashlib import sha256
+import hmac
 
 
 class EventListResource(Resource):
@@ -208,8 +210,11 @@ class EventFacebookPublish(Resource):
         parser.add_argument('message', type=unicode, required=True)
         args = parser.parse_args()
 
+        digest = hmac.new(current_app.config['FACEBOOK_SECRET'], msg=event.club.facebook_publish.access_token, digestmod=sha256).digest()
+
         response = requests.post('https://graph.facebook.com/v2.5/' + event.club.facebook_publish.id + '/feed', params={
-            'access_token': event.club.facebook_publish.access_token
+            'access_token': event.club.facebook_publish.access_token,
+            'appsecret_proof': digest
         }, data={
             'message': args['message'],
             'link': url_for('events', event_id=event.id, _external=True)
