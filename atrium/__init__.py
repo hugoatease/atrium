@@ -164,6 +164,9 @@ def login():
     if 'signup_redirect' in request.args:
         params['signup_redirect'] = 'true'
 
+    if 'facebook_additional_scopes' in request.args:
+        params['facebook_additional_scopes'] = request.args['facebook_additional_scopes']
+
     params = urlencode(params)
 
     if 'next' in request.args:

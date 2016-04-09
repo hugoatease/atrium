@@ -91,7 +91,7 @@ var ClubFacebook = React.createClass({
                             </p>
                             <a
                                 className="button primary"
-                                href={'/login?facebook_additional_permissions=manage_pages,publish_pages&next=' + window.location.pathname}>
+                                href={'/login?facebook_additional_scopes=manage_pages,publish_pages&next=' + window.location.pathname}>
                                 Grant permissions
                             </a>
                         </div>
