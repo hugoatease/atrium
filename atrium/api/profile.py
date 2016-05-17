@@ -2,7 +2,7 @@ from flask import current_app, g
 from flask_login import current_user, login_required
 from flask_restful import Resource, abort
 from flask_restful import reqparse, marshal_with
-from .fields import profile_fields
+from .fields import profile_list_fields, profile_fields
 import arrow
 from atrium import s3conn
 from boto.s3.key import Key
@@ -13,7 +13,7 @@ from hashlib import md5
 
 
 class ProfileListResource(Resource):
-    @marshal_with(profile_fields)
+    @marshal_with(profile_list_fields)
     def get(self):
         return list(g.Profile.objects.all())
 
@@ -24,10 +24,12 @@ class ProfileResource(Resource):
         if profile_id == 'me':
             return g.Profile.objects.filter(user=current_user.get_user()).first()
         else:
+            if not current_user.is_admin():
+                return abort(401)
             return g.Profile.objects.with_id(profile_id)
 
     @login_required
-    @marshal_with(profile_fields)
+    @marshal_with(profile_list_fields)
     def put(self, profile_id):
         if profile_id != 'me' and not current_user.is_admin():
             return abort(401)
@@ -60,7 +62,7 @@ class ProfileResource(Resource):
 
 class ProfilePhoto(Resource):
     @login_required
-    @marshal_with(profile_fields)
+    @marshal_with(profile_list_fields)
     def post(self, profile_id):
         if profile_id != 'me' and not current_user.is_admin():
             return abort(401)

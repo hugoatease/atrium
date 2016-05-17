@@ -9,6 +9,8 @@ class UsersListResource(Resource):
     @login_required
     @marshal_with(user_fields)
     def get(self):
+        if not current_user.is_admin():
+            return abort(401)
         return list(g.User.objects.all())
 
 
@@ -16,6 +18,8 @@ class UsersResource(Resource):
     @login_required
     @marshal_with(user_fields)
     def get(self, user_id):
+        if not current_user.is_admin():
+            return abort(401)
         return g.User.objects.with_id(user_id)
 
 

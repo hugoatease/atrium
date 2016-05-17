@@ -18,7 +18,7 @@ import hmac
 class EventListResource(Resource):
     @marshal_with(event_fields)
     def get(self):
-        query = g.Event.objects
+        query = g.Event.objects.no_dereference()
         if 'club' in request.args:
             query = query.filter(club=g.Club.objects.with_id(request.args['club']))
 
@@ -111,7 +111,7 @@ class EventListResource(Resource):
 class EventResource(Resource):
     @marshal_with(event_fields)
     def get(self, event_id):
-        return g.Event.objects.with_id(event_id)
+        return g.Event.objects.no_dereference().with_id(event_id)
 
     @login_required
     @marshal_with(event_fields)

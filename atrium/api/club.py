@@ -1,7 +1,7 @@
 from flask import g
 from flask_restful import Resource, marshal_with, reqparse, current_app, abort
 from flask_login import login_required, current_user
-from .fields import club_fields, club_permissions_fields
+from .fields import club_fields, club_list_fields, club_permissions_fields
 import werkzeug.datastructures
 from atrium import s3conn
 from atrium.schemas import ClubFacebookPublish
@@ -12,7 +12,7 @@ import requests
 
 
 class ClubListResource(Resource):
-    @marshal_with(club_fields)
+    @marshal_with(club_list_fields)
     def get(self):
         return list(g.Club.objects.all())
 
