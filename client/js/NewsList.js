@@ -17,14 +17,15 @@ var NewsList = React.createClass({
     },
 
     componentDidMount: function() {
-        var r = request.get('/api/news');
+        var r = request.get('/api/news')
+            .query({limit: 1000});
         if (this.props.club) {
             r = r.query({club: this.props.club});
         }
         r.end(function (err, res) {
             if (err) return;
             this.setState({
-                news: res.body
+                news: res.body.results
             });
         }.bind(this));
     },

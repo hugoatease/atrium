@@ -13,16 +13,17 @@ import requests
 import pypandoc
 from hashlib import sha256
 import hmac
+from helpers import pagination_helper
 
 
 class EventListResource(Resource):
-    @marshal_with(event_fields)
+    @pagination_helper(event_fields)
     def get(self):
         query = g.Event.objects.no_dereference()
         if 'club' in request.args:
             query = query.filter(club=g.Club.objects.with_id(request.args['club']))
 
-        return list(query.all())
+        return query
 
     @login_required
     @marshal_with(event_fields)

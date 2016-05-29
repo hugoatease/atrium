@@ -10,10 +10,11 @@ from atrium import s3conn
 from boto.s3.key import Key
 import werkzeug.datastructures
 from uuid import uuid4
+from helpers import pagination_helper
 
 
 class NewsListResource(Resource):
-    @marshal_with(news_fields)
+    @pagination_helper(news_fields)
     def get(self):
         query = g.News.objects
         if 'club' in request.args:
@@ -24,7 +25,7 @@ class NewsListResource(Resource):
             if request.args['draft'] == 'false':
                 query = query.filter(draft=False)
 
-        return list(query.all())
+        return query
 
     @login_required
     @marshal_with(news_fields)

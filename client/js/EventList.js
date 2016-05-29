@@ -17,14 +17,15 @@ var EventList = React.createClass({
     },
 
     componentDidMount: function() {
-        var r = request.get('/api/events');
+        var r = request.get('/api/events')
+            .query({limit: 1000});
         if (this.props.club) {
             r = r.query({club: this.props.club});
         }
         r.end(function(err, res) {
             if (err) return;
             this.setState({
-                events: res.body
+                events: res.body.results
             });
         }.bind(this));
     },
