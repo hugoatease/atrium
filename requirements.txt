@@ -4,6 +4,7 @@ blinker==1.4
 boto==2.39.0
 cryptography==1.2.3
 Flask==0.10.1
+flask-appconfig==0.11.1
 Flask-Babel==0.9
 Flask-Login==0.3.2
 flask-mongoengine==0.7.5

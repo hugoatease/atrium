@@ -3,7 +3,6 @@ from flask_babel import Babel, format_datetime, format_date, format_time
 import requests
 from urllib import urlencode
 from atrium.schemas import db, schemas
-import settings
 from .auth import login_manager
 import jwt
 import cryptography.hazmat.primitives.serialization
@@ -23,10 +22,11 @@ import mongoengine
 from textblob import TextBlob
 import pypandoc
 import json
+from flask_appconfig import AppConfig
 
 
-app = Flask(__name__)
-app.config.from_object(settings)
+app = Flask('atrium')
+AppConfig(app)
 app.config['MONGODB_SETTINGS'] = {
     'host': app.config['MONGODB_HOST'],
     'port': app.config['MONGODB_PORT'],
@@ -186,7 +186,7 @@ def login_return():
 
     key = cryptography.hazmat.primitives.serialization.load_pem_public_key(g.openid['issuer_key'], backend=default_backend())
 
-    id_token = jwt.decode(tokens['id_token'], key, audience=g.openid['client_id'])
+    id_token = jwt.decode(tokens['id_token'], key, audience=g.openid['client_id'], leeway=30)
     sub = id_token['sub']
     info = requests.get(g.openid['userinfo_endpoint'], headers={'Authorization': 'Bearer ' + tokens['access_token']}).json()
 

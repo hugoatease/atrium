@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  atrium:
+    build: .
+    ports: ['8000:8000']
+    volumes: ['.:/usr/src/app']
+    depends_on:
+    - mongodb
+    - etcd
+    links:
+    - mongodb
+    - etcd
+    environment:
+      ATRIUM_MONGODB_HOST: "mongodb"
+      ATRIUM_ETCD_HOST: "etcd"
+    env_file: ./secrets.env
+    command: sh -c "sh ./etcd/bootstrap.sh && gunicorn atrium:app -b 0.0.0.0:8000 -w 3 --reload"
+
+  mongodb:
+    image: mongo:3.2
+
+  etcd:
+    image: elcolio/etcd:2.0.10

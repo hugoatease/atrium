@@ -1,0 +1,8 @@
+MONGODB_DB = 'atrium'
+MONGODB_HOST = 'localhost'
+MONGODB_PORT = 27017
+ETCD_HOST = 'localhost'
+ETCD_PORT = 2379
+DEBUG = True
+SECRET_KEY = 'uEmEPuwVOZQRGk03hfnh5yB42bw+hnApVx7SlKynp5o='
+BABEL_DEFAULT_TIMEZONE = 'Europe/Paris'
